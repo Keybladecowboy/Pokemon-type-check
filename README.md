@@ -2,7 +2,7 @@
 
 A fast, offline-first web app for checking Pokémon type matchups — built for competitive players using the **Regulation Set M-B** ruleset (Pokémon Champions).
 
-**[Live Demo →](#)** *(add your GitHub Pages / Netlify link here)*
+**[Live Demo →](https://keybladecowboy.github.io/Pokemon-type-check/)**
 
 ## Features
 
