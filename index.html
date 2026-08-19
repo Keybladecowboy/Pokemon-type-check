@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Type Check</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#161213">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Type Check">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  :root{
+    --bg:#161213;
+    --panel:#201819;
+    --panel-2:#2a1c1d50;
+    --line:#3a2224;
+    --text:#f7eeee;
+    --dim:#a68a8a;
+    --accent:#e0242a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 15% 0%, #2a1414 0%, transparent 45%),
+      radial-gradient(circle at 100% 30%, #241010 0%, transparent 40%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Space Grotesk', sans-serif;
+    min-height:100vh;
+    padding:28px 16px 60px;
+  }
+  .wrap{max-width:720px; margin:0 auto;}
+
+  header{margin-bottom:28px;}
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin-bottom:8px;
+  }
+  h1{
+    font-size:clamp(28px,7vw,40px);
+    font-weight:700;
+    margin:0 0 8px;
+    letter-spacing:-0.02em;
+  }
+  header p{
+    color:var(--dim);
+    font-size:14.5px;
+    line-height:1.5;
+    margin:0;
+    max-width:52ch;
+  }
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:20px;
+    margin-bottom:16px;
+  }
+  .card h2{
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--dim);
+    margin:0 0 14px;
+    font-weight:600;
+  }
+
+  /* Name lookup */
+  .lookup-row{display:flex; gap:8px;}
+  .lookup-row input{
+    flex:1;
+    background:#12131c;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px 14px;
+    color:var(--text);
+    font-family:'Space Grotesk', sans-serif;
+    font-size:15px;
+  }
+  .lookup-row input:focus{outline:2px solid var(--accent); outline-offset:-1px;}
+  .lookup-row button{
+    background:var(--accent);
+    color:#ffffff;
+    border:none;
+    border-radius:10px;
+    padding:0 18px;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    font-family:'Space Grotesk', sans-serif;
+  }
+  .lookup-row button:active{transform:translateY(1px);}
+  .lookup-status{font-size:13px; color:var(--dim); margin-top:10px; min-height:18px;}
+  .lookup-status.error{color:#ff8a8a;}
+  .lookup-status.ok{color:#8fe3a0;}
+
+  .format-badge{
+    display:inline-block;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:4px 12px;
+    font-size:11.5px;
+    font-family:'JetBrains Mono', monospace;
+    letter-spacing:.05em;
+    color:var(--accent);
+    margin-bottom:14px;
+  }
+
+  .suggest-list{
+    margin-top:10px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .suggest-chip{
+    background:#12131c;
+    border:1px solid var(--line);
+    color:var(--text);
+    border-radius:8px;
+    padding:5px 10px;
+    font-size:12.5px;
+    cursor:pointer;
+  }
+  .suggest-chip:hover{border-color:var(--accent);}
+  .mega-tag{
+    display:inline-block;
+    font-size:10px;
+    font-family:'JetBrains Mono', monospace;
+    letter-spacing:.05em;
+    background:var(--accent);
+    color:#ffffff;
+    padding:1px 6px;
+    border-radius:5px;
+    margin-left:6px;
+    vertical-align:middle;
+  }
+
+  /* Type grid */
+  .type-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:8px;
+  }
+  @media(min-width:480px){ .type-grid{grid-template-columns:repeat(4,1fr);} }
+
+  .type-btn{
+    border:2px solid transparent;
+    border-radius:10px;
+    padding:10px 6px;
+    font-size:13px;
+    font-weight:600;
+    color:#fff;
+    text-align:center;
+    cursor:pointer;
+    opacity:.55;
+    transition:opacity .15s, transform .1s, border-color .15s;
+    font-family:'Space Grotesk', sans-serif;
+  }
+  .type-btn:hover{opacity:.85;}
+  .type-btn.selected{
+    opacity:1;
+    border-color:#fff;
+    transform:scale(1.04);
+  }
+  .clear-link{
+    display:inline-block;
+    margin-top:14px;
+    font-size:12.5px;
+    color:var(--dim);
+    text-decoration:underline;
+    cursor:pointer;
+    background:none;
+    border:none;
+    font-family:'Space Grotesk', sans-serif;
+    padding:0;
+  }
+
+  /* Selected summary */
+  .selection-line{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:16px;
+    min-height:32px;
+  }
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 12px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:700;
+    color:#fff;
+  }
+  .selection-line .plus{color:var(--dim); font-weight:600;}
+  .selection-line .placeholder{color:var(--dim); font-size:13.5px;}
+
+  /* Results */
+  .result-section{margin-bottom:18px;}
+  .result-section:last-child{margin-bottom:0;}
+  .result-label{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  .result-label .mult{
+    font-size:11px;
+    padding:2px 7px;
+    border-radius:6px;
+    background:var(--panel-2);
+  }
+  .chip-row{display:flex; flex-wrap:wrap; gap:7px;}
+  .chip-row .none{color:var(--dim); font-size:13px; font-style:italic;}
+
+  .empty-state{
+    text-align:center;
+    padding:30px 10px;
+    color:var(--dim);
+    font-size:14px;
+  }
+
+  footer{
+    text-align:center;
+    color:var(--dim);
+    font-size:12px;
+    margin-top:30px;
+    font-family:'JetBrains Mono', monospace;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Type Check // 001</div>
+    <h1>What beats what?</h1>
+    <p>Pick one or two types — or look a Pokémon up by name — to see every weakness, resistance, and immunity at a glance.</p>
+  </header>
+
+  <div class="card">
+    <div class="format-badge">Regulation Set M-B roster</div>
+    <h2>Look up an eligible Pokémon</h2>
+    <div class="lookup-row">
+      <input id="nameInput" type="text" placeholder="e.g. gyarados, mega mawile, tauros blaze" autocomplete="off">
+      <button id="lookupBtn">Find</button>
+    </div>
+    <div class="lookup-status" id="lookupStatus"></div>
+    <div class="suggest-list" id="suggestList"></div>
+  </div>
+
+  <div class="card">
+    <h2>Or pick type(s) manually</h2>
+    <div class="type-grid" id="typeGrid"></div>
+    <button class="clear-link" id="clearBtn">Clear selection</button>
+  </div>
+
+  <div class="card">
+    <h2>Result</h2>
+    <div class="selection-line" id="selectionLine">
+      <span class="placeholder">No type selected yet</span>
+    </div>
+    <div id="resultsArea">
+      <div class="empty-state">Select a type above, or search a Pokémon's name.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const TYPE_COLORS = {
+  Normal:'#A8A878', Fire:'#F08030', Water:'#6890F0', Electric:'#E8C020',
+  Grass:'#78C850', Ice:'#7FD8D8', Fighting:'#C03028', Poison:'#A040A0',
+  Ground:'#D9BB5E', Flying:'#A890F0', Psychic:'#F85888', Bug:'#A8B820',
+  Rock:'#B8A038', Ghost:'#705898', Dragon:'#7038F8', Dark:'#6F5C4C',
+  Steel:'#B8B8D0', Fairy:'#EE99AC'
+};
+
+// weak = types that hit this type for 2x, resist = types that hit for 0.5x, immune = 0x
+const TYPE_CHART = {
+  Normal:   {weak:['Fighting'], resist:[], immune:['Ghost']},
+  Fire:     {weak:['Water','Ground','Rock'], resist:['Fire','Grass','Ice','Bug','Steel','Fairy'], immune:[]},
+  Water:    {weak:['Electric','Grass'], resist:['Fire','Water','Ice','Steel'], immune:[]},
+  Electric: {weak:['Ground'], resist:['Electric','Flying','Steel'], immune:[]},
+  Grass:    {weak:['Fire','Ice','Poison','Flying','Bug'], resist:['Water','Electric','Grass','Ground'], immune:[]},
+  Ice:      {weak:['Fire','Fighting','Rock','Steel'], resist:['Ice'], immune:[]},
+  Fighting: {weak:['Flying','Psychic','Fairy'], resist:['Bug','Rock','Dark'], immune:[]},
+  Poison:   {weak:['Ground','Psychic'], resist:['Grass','Fighting','Poison','Bug','Fairy'], immune:[]},
+  Ground:   {weak:['Water','Grass','Ice'], resist:['Poison','Rock'], immune:['Electric']},
+  Flying:   {weak:['Electric','Ice','Rock'], resist:['Grass','Fighting','Bug'], immune:['Ground']},
+  Psychic:  {weak:['Bug','Ghost','Dark'], resist:['Fighting','Psychic'], immune:[]},
+  Bug:      {weak:['Fire','Flying','Rock'], resist:['Grass','Fighting','Ground'], immune:[]},
+  Rock:     {weak:['Water','Grass','Fighting','Ground','Steel'], resist:['Normal','Fire','Poison','Flying'], immune:[]},
+  Ghost:    {weak:['Ghost','Dark'], resist:['Poison','Bug'], immune:['Normal','Fighting']},
+  Dragon:   {weak:['Ice','Dragon','Fairy'], resist:['Fire','Water','Electric','Grass'], immune:[]},
+  Dark:     {weak:['Fighting','Bug','Fairy'], resist:['Ghost','Dark'], immune:['Psychic']},
+  Steel:    {weak:['Fire','Fighting','Ground'], resist:['Normal','Grass','Ice','Flying','Psychic','Bug','Rock','Dragon','Steel','Fairy'], immune:['Poison']},
+  Fairy:    {weak:['Poison','Steel'], resist:['Fighting','Bug','Dark'], immune:['Dragon']}
+};
+
+const ALL_TYPES = Object.keys(TYPE_CHART);
+let selected = [];
+
+const typeGrid = document.getElementById('typeGrid');
+ALL_TYPES.forEach(t=>{
+  const btn = document.createElement('div');
+  btn.className = 'type-btn';
+  btn.textContent = t;
+  btn.style.background = TYPE_COLORS[t];
+  btn.dataset.type = t;
+  btn.addEventListener('click', ()=>toggleType(t));
+  typeGrid.appendChild(btn);
+});
+
+function toggleType(t){
+  if(selected.includes(t)){
+    selected = selected.filter(x=>x!==t);
+  } else {
+    if(selected.length >= 2) selected.shift();
+    selected.push(t);
+  }
+  render();
+}
+
+document.getElementById('clearBtn').addEventListener('click', ()=>{
+  selected = [];
+  document.getElementById('lookupStatus').textContent = '';
+  document.getElementById('lookupStatus').className = 'lookup-status';
+  render();
+});
+
+function multiplierFor(attackType, defendTypes){
+  let mult = 1;
+  defendTypes.forEach(dt=>{
+    const chart = TYPE_CHART[dt];
+    if(chart.immune.includes(attackType)) mult *= 0;
+    else if(chart.weak.includes(attackType)) mult *= 2;
+    else if(chart.resist.includes(attackType)) mult *= 0.5;
+  });
+  return mult;
+}
+
+function render(){
+  // type grid selection state
+  document.querySelectorAll('.type-btn').forEach(b=>{
+    b.classList.toggle('selected', selected.includes(b.dataset.type));
+  });
+
+  // selection line
+  const line = document.getElementById('selectionLine');
+  if(selected.length === 0){
+    line.innerHTML = '<span class="placeholder">No type selected yet</span>';
+  } else {
+    line.innerHTML = selected.map((t,i)=>{
+      const badge = `<span class="badge" style="background:${TYPE_COLORS[t]}">${t}</span>`;
+      return i < selected.length-1 ? badge + '<span class="plus">+</span>' : badge;
+    }).join('');
+  }
+
+  const resultsArea = document.getElementById('resultsArea');
+  if(selected.length === 0){
+    resultsArea.innerHTML = '<div class="empty-state">Select a type above, or search a Pokémon\'s name.</div>';
+    return;
+  }
+
+  const groups = {
+    '4':   {label:'Double weakness', mult:'×4',   types:[]},
+    '2':   {label:'Weak to',         mult:'×2',   types:[]},
+    '0.5': {label:'Resists',         mult:'×0.5', types:[]},
+    '0.25':{label:'Double resist',   mult:'×0.25',types:[]},
+    '0':   {label:'Immune to',       mult:'×0',   types:[]}
+  };
+
+  ALL_TYPES.forEach(atk=>{
+    const m = multiplierFor(atk, selected);
+    if(m === 4) groups['4'].types.push(atk);
+    else if(m === 2) groups['2'].types.push(atk);
+    else if(m === 0.5) groups['0.5'].types.push(atk);
+    else if(m === 0.25) groups['0.25'].types.push(atk);
+    else if(m === 0) groups['0'].types.push(atk);
+  });
+
+  const order = ['4','2','0','0.5','0.25'];
+  resultsArea.innerHTML = order.map(key=>{
+    const g = groups[key];
+    const chips = g.types.length
+      ? g.types.map(t=>`<span class="badge" style="background:${TYPE_COLORS[t]}">${t}</span>`).join('')
+      : '<span class="none">none</span>';
+    return `
+      <div class="result-section">
+        <div class="result-label">${g.label} <span class="mult">${g.mult}</span></div>
+        <div class="chip-row">${chips}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// --- Regulation M-B roster: fixed, offline dataset (no network needed) ---
+const nameInput = document.getElementById('nameInput');
+const lookupBtn = document.getElementById('lookupBtn');
+const lookupStatus = document.getElementById('lookupStatus');
+const suggestList = document.getElementById('suggestList');
+
+const POKEDEX = {"Venusaur": ["Grass", "Poison"], "Charizard": ["Fire", "Flying"], "Blastoise": ["Water"], "Beedrill": ["Bug", "Poison"], "Pidgeot": ["Normal", "Flying"], "Arbok": ["Poison"], "Pikachu": ["Electric"], "Raichu": ["Electric"], "Raichu (Alolan)": ["Electric", "Psychic"], "Clefable": ["Fairy"], "Ninetales": ["Fire"], "Ninetales (Alolan)": ["Ice", "Fairy"], "Vileplume": ["Grass", "Poison"], "Arcanine": ["Fire"], "Arcanine (Hisuian)": ["Fire", "Rock"], "Alakazam": ["Psychic"], "Machamp": ["Fighting"], "Victreebel": ["Grass", "Poison"], "Slowbro": ["Water", "Psychic"], "Slowbro (Galarian)": ["Poison", "Psychic"], "Gengar": ["Ghost", "Poison"], "Kangaskhan": ["Normal"], "Starmie": ["Water", "Psychic"], "Pinsir": ["Bug"], "Tauros": ["Normal"], "Tauros (Paldean Combat Breed)": ["Fighting"], "Tauros (Paldean Blaze Breed)": ["Fighting", "Fire"], "Tauros (Paldean Aqua Breed)": ["Fighting", "Water"], "Gyarados": ["Water", "Flying"], "Ditto": ["Normal"], "Vaporeon": ["Water"], "Jolteon": ["Electric"], "Flareon": ["Fire"], "Aerodactyl": ["Rock", "Flying"], "Snorlax": ["Normal"], "Dragonite": ["Dragon", "Flying"], "Meganium": ["Grass"], "Typhlosion": ["Fire"], "Typhlosion (Hisuian)": ["Fire", "Ghost"], "Feraligatr": ["Water"], "Ariados": ["Bug", "Poison"], "Ampharos": ["Electric"], "Azumarill": ["Water", "Fairy"], "Politoed": ["Water"], "Espeon": ["Psychic"], "Umbreon": ["Dark"], "Slowking": ["Water", "Psychic"], "Slowking (Galarian)": ["Poison", "Psychic"], "Forretress": ["Bug", "Steel"], "Steelix": ["Steel", "Ground"], "Qwilfish": ["Water", "Poison"], "Scizor": ["Bug", "Steel"], "Heracross": ["Bug", "Fighting"], "Skarmory": ["Steel", "Flying"], "Houndoom": ["Dark", "Fire"], "Tyranitar": ["Rock", "Dark"], "Sceptile": ["Grass"], "Blaziken": ["Fire", "Fighting"], "Swampert": ["Water", "Ground"], "Pelipper": ["Water", "Flying"], "Gardevoir": ["Psychic", "Fairy"], "Sableye": ["Dark", "Ghost"], "Mawile": ["Steel", "Fairy"], "Aggron": ["Steel", "Rock"], "Medicham": ["Fighting", "Psychic"], "Manectric": ["Electric"], "Sharpedo": ["Water", "Dark"], "Camerupt": ["Fire", "Ground"], "Torkoal": ["Fire"], "Altaria": ["Dragon", "Flying"], "Milotic": ["Water"], "Castform": ["Normal"], "Banette": ["Ghost"], "Chimecho": ["Psychic"], "Absol": ["Dark"], "Glalie": ["Ice"], "Metagross": ["Steel", "Psychic"], "Torterra": ["Grass", "Ground"], "Infernape": ["Fire", "Fighting"], "Empoleon": ["Water", "Steel"], "Staraptor": ["Normal", "Flying"], "Luxray": ["Electric"], "Roserade": ["Grass", "Poison"], "Rampardos": ["Rock"], "Bastiodon": ["Rock", "Steel"], "Lopunny": ["Normal"], "Spiritomb": ["Ghost", "Dark"], "Garchomp": ["Dragon", "Ground"], "Lucario": ["Fighting", "Steel"], "Hippowdon": ["Ground"], "Toxicroak": ["Poison", "Fighting"], "Abomasnow": ["Grass", "Ice"], "Weavile": ["Dark", "Ice"], "Rhyperior": ["Ground", "Rock"], "Leafeon": ["Grass"], "Glaceon": ["Ice"], "Gliscor": ["Ground", "Flying"], "Mamoswine": ["Ice", "Ground"], "Gallade": ["Psychic", "Fighting"], "Froslass": ["Ice", "Ghost"], "Rotom": ["Electric", "Ghost"], "Rotom (Heat)": ["Electric", "Fire"], "Rotom (Wash)": ["Electric", "Water"], "Rotom (Frost)": ["Electric", "Ice"], "Rotom (Fan)": ["Electric", "Flying"], "Rotom (Mow)": ["Electric", "Grass"], "Serperior": ["Grass"], "Emboar": ["Fire", "Fighting"], "Samurott": ["Water"], "Samurott (Hisuian)": ["Water", "Dark"], "Watchog": ["Normal"], "Liepard": ["Dark"], "Simisage": ["Grass"], "Simisear": ["Fire"], "Simipour": ["Water"], "Musharna": ["Psychic"], "Excadrill": ["Ground", "Steel"], "Audino": ["Normal"], "Conkeldurr": ["Fighting"], "Scolipede": ["Bug", "Poison"], "Whimsicott": ["Grass", "Fairy"], "Krookodile": ["Ground", "Dark"], "Scrafty": ["Dark", "Fighting"], "Cofagrigus": ["Ghost"], "Garbodor": ["Poison"], "Zoroark": ["Dark"], "Zoroark (Hisuian)": ["Normal", "Ghost"], "Reuniclus": ["Psychic"], "Vanilluxe": ["Ice"], "Emolga": ["Electric", "Flying"], "Eelektross": ["Electric"], "Chandelure": ["Ghost", "Fire"], "Beartic": ["Ice"], "Stunfisk": ["Ground", "Electric"], "Stunfisk (Galarian)": ["Ground", "Steel"], "Golurk": ["Ground", "Ghost"], "Hydreigon": ["Dark", "Dragon"], "Volcarona": ["Bug", "Fire"], "Chesnaught": ["Grass", "Fighting"], "Delphox": ["Fire", "Psychic"], "Greninja": ["Water", "Dark"], "Diggersby": ["Normal", "Ground"], "Talonflame": ["Fire", "Flying"], "Vivillon": ["Bug", "Flying"], "Pyroar": ["Fire", "Normal"], "Floette": ["Fairy"], "Florges": ["Fairy"], "Pangoro": ["Fighting", "Dark"], "Furfrou": ["Normal"], "Meowstic (Male)": ["Psychic"], "Meowstic (Female)": ["Psychic"], "Aegislash": ["Steel", "Ghost"], "Aromatisse": ["Fairy"], "Slurpuff": ["Fairy"], "Malamar": ["Dark", "Psychic"], "Barbaracle": ["Rock", "Water"], "Dragalge": ["Poison", "Dragon"], "Clawitzer": ["Water"], "Heliolisk": ["Electric", "Normal"], "Tyrantrum": ["Rock", "Dragon"], "Aurorus": ["Rock", "Ice"], "Sylveon": ["Fairy"], "Hawlucha": ["Fighting", "Flying"], "Dedenne": ["Electric", "Fairy"], "Goodra": ["Dragon"], "Goodra (Hisuian)": ["Steel", "Dragon"], "Klefki": ["Steel", "Fairy"], "Trevenant": ["Ghost", "Grass"], "Gourgeist (Small)": ["Ghost", "Grass"], "Gourgeist (Medium)": ["Ghost", "Grass"], "Gourgeist (Large)": ["Ghost", "Grass"], "Gourgeist (Jumbo)": ["Ghost", "Grass"], "Avalugg": ["Ice"], "Avalugg (Hisuian)": ["Ice", "Rock"], "Noivern": ["Flying", "Dragon"], "Decidueye": ["Grass", "Ghost"], "Decidueye (Hisuian)": ["Grass", "Fighting"], "Incineroar": ["Fire", "Dark"], "Primarina": ["Water", "Fairy"], "Toucannon": ["Normal", "Flying"], "Crabominable": ["Fighting", "Ice"], "Lycanroc (Midday)": ["Rock"], "Lycanroc (Midnight)": ["Rock"], "Lycanroc (Dusk)": ["Rock"], "Toxapex": ["Poison", "Water"], "Mudsdale": ["Ground"], "Araquanid": ["Water", "Bug"], "Salazzle": ["Poison", "Fire"], "Tsareena": ["Grass"], "Oranguru": ["Normal", "Psychic"], "Passimian": ["Fighting"], "Mimikyu": ["Ghost", "Fairy"], "Drampa": ["Normal", "Dragon"], "Kommo-o": ["Dragon", "Fighting"], "Corviknight": ["Flying", "Steel"], "Flapple": ["Grass", "Dragon"], "Appletun": ["Grass", "Dragon"], "Sandaconda": ["Ground"], "Polteageist": ["Ghost"], "Hatterene": ["Psychic", "Fairy"], "Grimmsnarl": ["Dark", "Fairy"], "Mr. Rime": ["Ice", "Psychic"], "Runerigus": ["Ground", "Ghost"], "Alcremie": ["Fairy"], "Falinks": ["Fighting"], "Morpeko": ["Electric", "Dark"], "Dragapult": ["Dragon", "Ghost"], "Wyrdeer": ["Normal", "Psychic"], "Kleavor": ["Bug", "Rock"], "Basculegion (Male)": ["Water", "Ghost"], "Basculegion (Female)": ["Water", "Ghost"], "Sneasler": ["Fighting", "Poison"], "Overqwil": ["Dark", "Poison"], "Meowscarada": ["Grass", "Dark"], "Skeledirge": ["Fire", "Ghost"], "Quaquaval": ["Water", "Fighting"], "Maushold": ["Normal"], "Garganacl": ["Rock"], "Armarouge": ["Fire", "Psychic"], "Ceruledge": ["Fire", "Ghost"], "Bellibolt": ["Electric"], "Scovillain": ["Grass", "Fire"], "Espathra": ["Psychic"], "Tinkaton": ["Fairy", "Steel"], "Palafin": ["Water"], "Orthworm": ["Steel"], "Glimmora": ["Rock", "Poison"], "Houndstone": ["Ghost"], "Annihilape": ["Fighting", "Ghost"], "Farigiraf": ["Normal", "Psychic"], "Kingambit": ["Dark", "Steel"], "Gholdengo": ["Steel", "Ghost"], "Sinistcha": ["Grass", "Ghost"], "Archaludon": ["Steel", "Dragon"], "Hydrapple": ["Grass", "Dragon"], "Mega Venusaur": ["Grass", "Poison"], "Mega Charizard X": ["Fire", "Dragon"], "Mega Charizard Y": ["Fire", "Flying"], "Mega Blastoise": ["Water"], "Mega Beedrill": ["Bug", "Poison"], "Mega Pidgeot": ["Normal", "Flying"], "Mega Raichu X": ["Electric"], "Mega Raichu Y": ["Electric"], "Mega Clefable": ["Fairy"], "Mega Alakazam": ["Psychic"], "Mega Victreebel": ["Grass", "Poison"], "Mega Slowbro": ["Water", "Psychic"], "Mega Gengar": ["Ghost", "Poison"], "Mega Kangaskhan": ["Normal"], "Mega Starmie": ["Water", "Psychic"], "Mega Pinsir": ["Bug", "Flying"], "Mega Gyarados": ["Water", "Dark"], "Mega Aerodactyl": ["Rock", "Flying"], "Mega Dragonite": ["Dragon", "Flying"], "Mega Meganium": ["Grass"], "Mega Feraligatr": ["Water"], "Mega Ampharos": ["Electric", "Dragon"], "Mega Steelix": ["Steel", "Ground"], "Mega Scizor": ["Bug", "Steel"], "Mega Heracross": ["Bug", "Fighting"], "Mega Skarmory": ["Steel", "Flying"], "Mega Houndoom": ["Dark", "Fire"], "Mega Tyranitar": ["Rock", "Dark"], "Mega Sceptile": ["Grass", "Dragon"], "Mega Blaziken": ["Fire", "Fighting"], "Mega Swampert": ["Water", "Ground"], "Mega Gardevoir": ["Psychic", "Fairy"], "Mega Sableye": ["Dark", "Ghost"], "Mega Mawile": ["Steel", "Fairy"], "Mega Aggron": ["Steel"], "Mega Medicham": ["Fighting", "Psychic"], "Mega Manectric": ["Electric"], "Mega Sharpedo": ["Water", "Dark"], "Mega Camerupt": ["Fire", "Ground"], "Mega Altaria": ["Dragon", "Fairy"], "Mega Banette": ["Ghost"], "Mega Chimecho": ["Psychic"], "Mega Absol": ["Dark"], "Mega Glalie": ["Ice"], "Mega Metagross": ["Steel", "Psychic"], "Mega Staraptor": ["Fighting", "Flying"], "Mega Lopunny": ["Normal", "Fighting"], "Mega Garchomp": ["Dragon", "Ground"], "Mega Lucario": ["Fighting", "Steel"], "Mega Abomasnow": ["Grass", "Ice"], "Mega Gallade": ["Psychic", "Fighting"], "Mega Froslass": ["Ice", "Ghost"], "Mega Emboar": ["Fire", "Fighting"], "Mega Excadrill": ["Ground", "Steel"], "Mega Audino": ["Normal", "Fairy"], "Mega Scolipede": ["Bug", "Poison"], "Mega Scrafty": ["Dark", "Fighting"], "Mega Eelektross": ["Electric"], "Mega Chandelure": ["Ghost", "Fire"], "Mega Golurk": ["Ground", "Ghost"], "Mega Chesnaught": ["Grass", "Fighting"], "Mega Delphox": ["Fire", "Psychic"], "Mega Greninja": ["Water", "Dark"], "Mega Pyroar": ["Normal", "Fire"], "Mega Floette": ["Fairy"], "Mega Meowstic": ["Psychic"], "Mega Malamar": ["Dark", "Psychic"], "Mega Barbaracle": ["Fighting", "Rock"], "Mega Dragalge": ["Poison", "Dragon"], "Mega Hawlucha": ["Fighting", "Flying"], "Mega Crabominable": ["Fighting", "Ice"], "Mega Drampa": ["Normal", "Dragon"], "Mega Falinks": ["Fighting"], "Mega Scovillain": ["Grass", "Fire"], "Mega Glimmora": ["Rock", "Poison"]};
+const MEGA_NAMES = new Set(Object.keys(POKEDEX).filter(n => n.startsWith('Mega ')));
+
+// build a normalized lookup index: "raichualolan" / "megamawile" / "taurosblazebreed" -> canonical name
+const SEARCH_INDEX = {};
+Object.keys(POKEDEX).forEach(name => {
+  const norm = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+  SEARCH_INDEX[norm] = name;
+});
+
+function applyTypes(canonicalName){
+  const types = POKEDEX[canonicalName];
+  selected = types.slice(0,2);
+  lookupStatus.className = 'lookup-status ok';
+  const megaTag = MEGA_NAMES.has(canonicalName) ? ' <span class="mega-tag">MEGA</span>' : '';
+  lookupStatus.innerHTML = `${canonicalName}${megaTag} — ${types.join(' / ')}`;
+  suggestList.innerHTML = '';
+  render();
+}
+
+function showSuggestions(names){
+  suggestList.innerHTML = '';
+  names.slice(0,8).forEach(name => {
+    const chip = document.createElement('div');
+    chip.className = 'suggest-chip';
+    chip.textContent = name;
+    chip.addEventListener('click', ()=> applyTypes(name));
+    suggestList.appendChild(chip);
+  });
+}
+
+function doLookup(){
+  const raw = nameInput.value.trim();
+  if(!raw) return;
+  const norm = raw.toLowerCase().replace(/[^a-z0-9]/g, '');
+  suggestList.innerHTML = '';
+  lookupStatus.className = 'lookup-status';
+
+  // exact normalized match
+  if(SEARCH_INDEX[norm]){
+    applyTypes(SEARCH_INDEX[norm]);
+    return;
+  }
+
+  // substring match across all roster names
+  const matches = Object.keys(POKEDEX).filter(name => {
+    const n = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    return n.includes(norm) || norm.includes(n);
+  });
+
+  if(matches.length === 1){
+    applyTypes(matches[0]);
+  } else if(matches.length > 1){
+    lookupStatus.textContent = `${matches.length} matches in the M-B roster — pick one:`;
+    showSuggestions(matches);
+  } else {
+    lookupStatus.className = 'lookup-status error';
+    lookupStatus.textContent = "Not in the Regulation M-B roster — check the spelling, or it may not be legal this season.";
+  }
+}
+
+lookupBtn.addEventListener('click', doLookup);
+nameInput.addEventListener('keydown', e=>{ if(e.key==='Enter') doLookup(); });
+
+render();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('./sw.js').catch(()=>{ /* ignore on unsupported hosts */ });
+  });
+}
+</script>
+</body>
+</html>
