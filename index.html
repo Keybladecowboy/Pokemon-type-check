@@ -33,9 +33,96 @@
     color:var(--text);
     font-family:'Space Grotesk', sans-serif;
     min-height:100vh;
-    padding:28px 16px 60px;
+    padding:20px 12px 50px;
   }
   .wrap{max-width:720px; margin:0 auto;}
+
+  /* --- Handheld device frame --- */
+  .device-frame{
+    background:
+      linear-gradient(155deg, #ec3a3f 0%, #c81820 55%, #a3141a 100%);
+    border-radius:26px;
+    padding:14px 14px 20px;
+    box-shadow:
+      0 12px 30px rgba(0,0,0,.45),
+      inset 0 2px 0 rgba(255,255,255,.25),
+      inset 0 -6px 14px rgba(0,0,0,.25);
+    margin-bottom:8px;
+  }
+  .device-top{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:4px 6px 14px;
+  }
+  .lens{
+    width:30px; height:30px;
+    border-radius:50%;
+    background:radial-gradient(circle at 32% 30%, #d8f4ff 0%, #6fc3ef 35%, #1c7fb8 70%, #0e4d70 100%);
+    border:3px solid #fff;
+    box-shadow:0 0 0 2px rgba(0,0,0,.2), 0 2px 4px rgba(0,0,0,.3);
+    flex-shrink:0;
+  }
+  .status-dots{display:flex; gap:5px; margin-left:2px;}
+  .status-dots span{
+    width:7px; height:7px; border-radius:50%;
+    box-shadow:0 1px 2px rgba(0,0,0,.3), inset 0 0 0 1px rgba(255,255,255,.3);
+  }
+  .status-dots .d1{background:#ff5c5c;}
+  .status-dots .d2{background:#ffd23f;}
+  .status-dots .d3{background:#57d97a;}
+  .device-top .device-label{
+    margin-left:auto;
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    letter-spacing:.14em;
+    color:rgba(255,255,255,.75);
+    text-transform:uppercase;
+  }
+
+  .screen{
+    background:var(--bg);
+    border-radius:16px;
+    padding:20px 16px 8px;
+    box-shadow:
+      inset 0 0 0 2px rgba(0,0,0,.35),
+      inset 0 3px 10px rgba(0,0,0,.5);
+  }
+
+  .device-bottom{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 10px 2px;
+  }
+  .bezel-btn{
+    background:rgba(0,0,0,.25);
+    border:1px solid rgba(255,255,255,.15);
+    color:rgba(255,255,255,.85);
+    font-size:12px;
+    font-weight:600;
+    padding:8px 14px;
+    border-radius:8px;
+    cursor:pointer;
+    font-family:'Space Grotesk', sans-serif;
+    text-decoration:none;
+    box-shadow:inset 0 1px 2px rgba(0,0,0,.3);
+  }
+  .bezel-btn:hover{background:rgba(0,0,0,.35); border-color:rgba(255,255,255,.3);}
+  .speaker-lines{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .speaker-lines span{
+    display:block;
+    width:60px; height:4px;
+    border-radius:2px;
+    background:rgba(0,0,0,.3);
+    box-shadow:0 1px 0 rgba(255,255,255,.12);
+  }
+  .speaker-lines span:nth-child(2){width:44px;}
+  .speaker-lines span:nth-child(3){width:52px;}
 
   header{margin-bottom:28px;}
   .eyebrow{
@@ -147,32 +234,54 @@
     vertical-align:middle;
   }
 
-  /* Type grid */
+  /* Keypad — bezel-mounted type buttons */
+  .keypad{
+    margin:6px 4px 2px;
+    padding:14px 10px 10px;
+    background:rgba(0,0,0,.18);
+    border-radius:16px;
+    box-shadow:inset 0 2px 6px rgba(0,0,0,.35), inset 0 -1px 0 rgba(255,255,255,.06);
+  }
+  .keypad-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:rgba(255,255,255,.65);
+    margin:0 4px 10px;
+  }
   .type-grid{
     display:grid;
     grid-template-columns:repeat(3, 1fr);
-    gap:8px;
+    gap:9px;
   }
   @media(min-width:480px){ .type-grid{grid-template-columns:repeat(4,1fr);} }
 
   .type-btn{
-    border:2px solid transparent;
-    border-radius:10px;
-    padding:10px 6px;
+    border:1px solid rgba(0,0,0,.25);
+    border-radius:9px;
+    padding:11px 6px;
     font-size:13px;
-    font-weight:600;
+    font-weight:700;
     color:#fff;
     text-align:center;
     cursor:pointer;
-    opacity:.55;
-    transition:opacity .15s, transform .1s, border-color .15s;
+    text-shadow:0 1px 1px rgba(0,0,0,.35);
+    box-shadow:
+      0 3px 0 rgba(0,0,0,.35),
+      inset 0 1px 0 rgba(255,255,255,.35);
+    transition:transform .08s, box-shadow .08s, filter .15s;
     font-family:'Space Grotesk', sans-serif;
+    filter:brightness(.8) saturate(.75);
   }
-  .type-btn:hover{opacity:.85;}
+  .type-btn:hover{filter:brightness(.92) saturate(.9);}
   .type-btn.selected{
-    opacity:1;
-    border-color:#fff;
-    transform:scale(1.04);
+    filter:brightness(1.08) saturate(1.15);
+    transform:translateY(2px);
+    box-shadow:
+      0 1px 0 rgba(0,0,0,.35),
+      inset 0 1px 0 rgba(255,255,255,.35),
+      0 0 0 2px rgba(255,255,255,.85);
   }
   .clear-link{
     display:inline-block;
@@ -248,6 +357,13 @@
 </head>
 <body>
 <div class="wrap">
+<div class="device-frame">
+  <div class="device-top">
+    <div class="lens"></div>
+    <div class="status-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+    <div class="device-label">Type Check</div>
+  </div>
+  <div class="screen">
   <header>
     <div class="eyebrow">Type Check // 001</div>
     <h1>What beats what?</h1>
@@ -266,12 +382,6 @@
   </div>
 
   <div class="card">
-    <h2>Or pick type(s) manually</h2>
-    <div class="type-grid" id="typeGrid"></div>
-    <button class="clear-link" id="clearBtn">Clear selection</button>
-  </div>
-
-  <div class="card">
     <h2>Result</h2>
     <div class="selection-line" id="selectionLine">
       <span class="placeholder">No type selected yet</span>
@@ -280,6 +390,18 @@
       <div class="empty-state">Select a type above, or search a Pokémon's name.</div>
     </div>
   </div>
+  </div>
+
+  <div class="keypad">
+    <div class="keypad-label">Or pick type(s) manually</div>
+    <div class="type-grid" id="typeGrid"></div>
+  </div>
+
+  <div class="device-bottom">
+    <button class="bezel-btn" id="clearBtn">Clear selection</button>
+    <div class="speaker-lines"><span></span><span></span><span></span></div>
+  </div>
+</div>
 
 </div>
 
