@@ -1,7 +1,8 @@
-const CACHE_NAME = 'type-check-v2';
+const CACHE_NAME = 'type-check-v3'; // <--- Bumped version number
 const ASSETS = [
   './',
   './index.html',
+  './newpage.html', // <--- Add your new page file name here
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
@@ -28,7 +29,6 @@ self.addEventListener('fetch', event => {
     caches.match(event.request).then(cached => {
       if (cached) return cached;
       return fetch(event.request).then(response => {
-        // don't cache cross-origin/opaque responses
         if (!response || response.status !== 200 || response.type !== 'basic') {
           return response;
         }
