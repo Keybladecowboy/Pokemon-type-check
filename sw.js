@@ -2,7 +2,7 @@ const CACHE_NAME = 'type-check-v4'; // <--- Bumped version number
 const ASSETS = [
   './',
   './index.html',
-  './newpage.html', // <--- Add your new page file name here
+  './Nature_tag.html', // <--- Add your new page file name here
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
