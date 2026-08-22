@@ -184,7 +184,7 @@
     font-weight:600;
   }
 
-  /* Photo preview + live capture overlay */
+ 
   .preview-box{
     width:100%;
     aspect-ratio:16/9;
@@ -275,7 +275,13 @@
     object-fit:cover;
     display:block;
   }
-
+  .camera-stage.ios-landscape-fix video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(90deg);
+  object-fit: cover;
+}
 
   .shutter-overlay-btn{
     width:62px;
@@ -309,7 +315,7 @@
     font-weight:bold;
     font-size:18px;
   }
-
+  
   .label-overlay{
     position:absolute;
     font-family:'Space Grotesk', sans-serif;
@@ -602,10 +608,27 @@ function stopCameraStream(){
   }
   isStreaming = false;
 }
+function updateOrientationFix() {
+  const angle = screen.orientation ? screen.orientation.angle : window.orientation || 0;
+  const isLandscape = Math.abs(angle) === 90;
+  cameraStage.classList.toggle('ios-landscape-fix', isLandscape);
+
+  if (isLandscape) {
+    inlineVideo.style.width = cameraStage.clientHeight + 'px';
+    inlineVideo.style.height = cameraStage.clientWidth + 'px';
+  } else {
+    inlineVideo.style.width = '';
+    inlineVideo.style.height = '';
+  }
+}
+
+window.addEventListener('orientationchange', updateOrientationFix);
+window.addEventListener('resize', updateOrientationFix);
 
 function openCameraOverlay(){
   inlineVideo.srcObject = stream;
   cameraOverlay.classList.add('open');
+  updateOrientationFix(); 
 }
 
 function closeCameraOverlay(){
