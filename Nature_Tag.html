@@ -462,6 +462,7 @@
 <input id="cameraInput" type="file" accept="image/*" capture="environment">
 
 <div class="camera-overlay" id="cameraOverlay">
+  <div id="debugOrientation" style="position:absolute; top:16px; left:16px; background:rgba(0,0,0,.8); color:#0f0; font-family:monospace; font-size:12px; padding:6px 10px; border-radius:6px; z-index:2000;">checking…</div>
   <button class="cancel-overlay-btn" id="cancelStreamBtn">✕</button>
   <div class="camera-frame">
     <div class="camera-stage" id="cameraStage">
@@ -610,6 +611,8 @@ function stopCameraStream(){
 }
 function updateOrientationFix() {
   const isLandscape = window.matchMedia('(orientation: landscape)').matches;
+  document.getElementById('debugOrientation').textContent =
+  'landscape: ' + isLandscape + ' | class: ' + cameraStage.classList.contains('ios-landscape-fix');
   cameraStage.classList.toggle('ios-landscape-fix', isLandscape);
 
   if (isLandscape) {
