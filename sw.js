@@ -1,4 +1,4 @@
-const CACHE_NAME = 'type-check-v5'; // <--- Bumped version number
+const CACHE_NAME = 'type-check-v5.1'; // <--- Bumped again: fullscreen camera + button/dot update
 const ASSETS = [
   './',
   './index.html',

@@ -68,14 +68,14 @@
   .status-dots span{
     width:7px; height:7px; border-radius:50%;
     box-shadow:0 1px 2px rgba(0,0,0,.3), inset 0 0 0 1px rgba(255,255,255,.3);
-    transition:background .2s, box-shadow .2s;
   }
-  .status-dots .d1{background:#502020;}
-  .status-dots .d1.active{background:#ff5c5c; box-shadow:0 0 6px #ff5c5c;}
-  .status-dots .d2{background:#504020;}
-  .status-dots .d2.active{background:#ffd23f; box-shadow:0 0 6px #ffd23f;}
-  .status-dots .d3{background:#205020;}
-  .status-dots .d3.active{background:var(--good); box-shadow:0 0 6px var(--good);}
+  .status-dots .d1{background:#ff5c5c; box-shadow:0 0 5px #ff5c5c, inset 0 0 0 1px rgba(255,255,255,.3);}
+  .status-dots .d2{background:#ffd23f; animation:dot-glow 1.6s ease-in-out infinite;}
+  .status-dots .d3{background:#57d97a; box-shadow:0 0 5px #57d97a, inset 0 0 0 1px rgba(255,255,255,.3);}
+  @keyframes dot-glow{
+    0%, 100% { box-shadow:0 0 4px #ffd23f, inset 0 0 0 1px rgba(255,255,255,.3); }
+    50%      { box-shadow:0 0 11px 2px #ffd23f, inset 0 0 0 1px rgba(255,255,255,.3); }
+  }
   .device-top .device-label{
     margin-left:auto;
     font-family:'JetBrains Mono', monospace;
@@ -103,9 +103,9 @@
     gap:8px;
   }
   .bezel-btn{
-    background:rgba(0,0,0,.25);
-    border:1px solid rgba(255,255,255,.15);
-    color:rgba(255,255,255,.85);
+    background:#a9a9a9;
+    border:1px solid #888;
+    color:#ffffff;
     font-size:12px;
     font-weight:600;
     padding:8px 14px;
@@ -113,9 +113,10 @@
     cursor:pointer;
     font-family:'Space Grotesk', sans-serif;
     text-decoration:none;
-    box-shadow:inset 0 1px 2px rgba(0,0,0,.3);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 2px 4px rgba(0,0,0,.3);
+    transition:.15s;
   }
-  .bezel-btn:hover:not(:disabled){background:rgba(0,0,0,.35); border-color:rgba(255,255,255,.3);}
+  .bezel-btn:hover:not(:disabled){background:#b8b8b8; border-color:#999;}
   .bezel-btn:disabled{opacity:.4; cursor:not-allowed;}
   .bezel-btn.accent{
     background:var(--accent);
@@ -219,44 +220,72 @@
     justify-content:flex-end;
     padding:4px 6px;
   }
-  .preview-slot-num{
-    font-family:'JetBrains Mono', monospace;
-    font-size:11px;
-    font-weight:700;
-    color:#fff;
-    background:rgba(224,36,42,.9);
-    padding:1px 5px;
-    border-radius:3px;
-  }
   .shutter-overlay-btn{
     position:absolute;
-    bottom:12px;
+    bottom:18px;
     left:50%;
     transform:translateX(-50%);
-    width:50px; height:50px;
+    width:58px; height:58px;
     border-radius:50%;
     background:#fff;
     border:4px solid rgba(255,255,255,.5);
     cursor:pointer;
-    box-shadow:0 0 12px rgba(0,0,0,.5);
+    box-shadow:0 0 14px rgba(0,0,0,.5);
     z-index:10;
   }
   .shutter-overlay-btn:active{transform:translateX(-50%) scale(.92);}
   .cancel-overlay-btn{
     position:absolute;
-    top:8px; right:8px;
+    top:10px; right:10px;
     background:rgba(0,0,0,.6);
     border:1px solid rgba(255,255,255,.3);
     color:#fff;
     border-radius:50%;
-    width:28px; height:28px;
+    width:32px; height:32px;
     cursor:pointer;
     z-index:10;
     display:flex;
     align-items:center;
     justify-content:center;
     font-weight:bold;
+    font-size:16px;
   }
+
+  /* Fullscreen camera capture, framed to match the device bezel */
+  .camera-overlay{
+    position:fixed;
+    inset:0;
+    z-index:1000;
+    background:rgba(10,6,6,.92);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+  }
+  .camera-overlay.open{display:flex;}
+  .camera-frame{
+    position:relative;
+    width:min(94vw, 480px);
+    height:min(82vh, 720px);
+    background:linear-gradient(155deg, #ec3a3f 0%, #c81820 55%, #a3141a 100%);
+    border-radius:28px;
+    padding:14px;
+    box-shadow:
+      0 20px 50px rgba(0,0,0,.6),
+      inset 0 2px 0 rgba(255,255,255,.25),
+      inset 0 -6px 14px rgba(0,0,0,.25);
+  }
+  .camera-stage{
+    position:absolute;
+    inset:14px;
+    border-radius:18px;
+    overflow:hidden;
+    background:#000;
+  }
+  .camera-stage video{width:100%; height:100%; object-fit:cover; display:block;}
+  .camera-stage.mirror video{transform:scaleX(-1);}
+  .camera-stage .preview-overlay-grid{inset:8px;}
+  .camera-stage.mirror .preview-overlay-grid{transform:scaleX(-1);}
 
   .label-overlay{
     position:absolute;
@@ -355,9 +384,9 @@
   <div class="device-top">
     <div class="lens"></div>
     <div class="status-dots">
-      <span class="d1" id="dot1"></span>
-      <span class="d2" id="dot2"></span>
-      <span class="d3 active"></span>
+      <span class="d1"></span>
+      <span class="d2"></span>
+      <span class="d3"></span>
     </div>
     <a href="./index.html" class="device-label" style="cursor:pointer; text-decoration:none; background:#a9a9a9; color:#ffffff; padding:6px 12px; border-radius:6px; border:1px solid #888; display:inline-block; transition:.15s; box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 2px 4px rgba(0,0,0,.3); font-weight:600;">Type Check</a>
   </div>
@@ -402,6 +431,24 @@
 
 <input id="fileInput" type="file" accept="image/*">
 <input id="cameraInput" type="file" accept="image/*" capture="environment">
+
+<div class="camera-overlay" id="cameraOverlay">
+  <div class="camera-frame">
+    <div class="camera-stage" id="cameraStage">
+      <video id="inlineVideo" autoplay playsinline muted></video>
+      <div class="preview-overlay-grid">
+        <div class="preview-slot-box"></div>
+        <div class="preview-slot-box"></div>
+        <div class="preview-slot-box"></div>
+        <div class="preview-slot-box"></div>
+        <div class="preview-slot-box"></div>
+        <div class="preview-slot-box"></div>
+      </div>
+    </div>
+    <button class="cancel-overlay-btn" id="cancelStreamBtn">✕</button>
+    <button class="shutter-overlay-btn" id="takePhotoBtn" title="Capture frame"></button>
+  </div>
+</div>
 
 <footer>Nature Tag — pairs with Type Check</footer>
 </div>
@@ -468,9 +515,12 @@ const libraryBtn = document.getElementById('libraryBtn');
 const clearAllBtn = document.getElementById('clearAllBtn');
 const downloadBtn = document.getElementById('downloadBtn');
 const gridBtn = document.getElementById('gridBtn');
-const dot1 = document.getElementById('dot1');
-const dot2 = document.getElementById('dot2');
 const tagCount = document.getElementById('tagCount');
+const cameraOverlay = document.getElementById('cameraOverlay');
+const cameraStage = document.getElementById('cameraStage');
+const inlineVideo = document.getElementById('inlineVideo');
+const cancelStreamBtn = document.getElementById('cancelStreamBtn');
+const takePhotoBtn = document.getElementById('takePhotoBtn');
 
 try {
   const saved = localStorage.getItem("nature-tagger:labels");
@@ -521,13 +571,29 @@ function loadDataUrl(url){
   img.src = url;
 }
 
-// --- Live camera capture ---
+// --- Live camera capture (fullscreen overlay, framed to match the app bezel) ---
+let lastRequestedFacing = 'environment';
+
 function stopCameraStream(){
   if (stream) {
     stream.getTracks().forEach(t => t.stop());
     stream = null;
   }
   isStreaming = false;
+}
+
+function openCameraOverlay(){
+  inlineVideo.srcObject = stream;
+  const track = stream.getVideoTracks()[0];
+  const settings = track && track.getSettings ? track.getSettings() : {};
+  const actualFacing = settings.facingMode || lastRequestedFacing;
+  cameraStage.classList.toggle('mirror', actualFacing !== 'environment');
+  cameraOverlay.classList.add('open');
+}
+
+function closeCameraOverlay(){
+  cameraOverlay.classList.remove('open');
+  inlineVideo.srcObject = null;
 }
 
 cameraBtn.addEventListener('click', async () => {
@@ -539,25 +605,31 @@ cameraBtn.addEventListener('click', async () => {
 
   try {
     let constraints = { video: true, audio: false };
+    lastRequestedFacing = 'user';
 
     if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(d => d.kind === 'videoinput');
       const iriun = videoDevices.find(d => d.label.toLowerCase().includes('iriun'));
 
-      constraints = iriun
-        ? { video: { deviceId: { exact: iriun.deviceId } }, audio: false }
-        : { video: { facingMode: "environment" }, audio: false };
+      if (iriun) {
+        constraints = { video: { deviceId: { exact: iriun.deviceId } }, audio: false };
+        lastRequestedFacing = 'user';
+      } else {
+        constraints = { video: { facingMode: "environment" }, audio: false };
+        lastRequestedFacing = 'environment';
+      }
     }
 
     try {
       stream = await navigator.mediaDevices.getUserMedia(constraints);
     } catch (e) {
       stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      lastRequestedFacing = 'user';
     }
 
     isStreaming = true;
-    renderStreamingView();
+    openCameraOverlay();
 
   } catch (err) {
     console.error("Camera access failed:", err);
@@ -566,39 +638,21 @@ cameraBtn.addEventListener('click', async () => {
   }
 });
 
-function renderStreamingView(){
-  previewBox.innerHTML = `
-    <video id="inlineVideo" autoplay playsinline muted></video>
-    <div class="preview-overlay-grid">
-      <div class="preview-slot-box"><span class="preview-slot-num">1</span></div>
-      <div class="preview-slot-box"><span class="preview-slot-num">2</span></div>
-      <div class="preview-slot-box"><span class="preview-slot-num">3</span></div>
-      <div class="preview-slot-box"><span class="preview-slot-num">4</span></div>
-      <div class="preview-slot-box"><span class="preview-slot-num">5</span></div>
-      <div class="preview-slot-box"><span class="preview-slot-num">6</span></div>
-    </div>
-    <button class="cancel-overlay-btn" id="cancelStreamBtn">✕</button>
-    <button class="shutter-overlay-btn" id="takePhotoBtn" title="Capture frame"></button>
-  `;
+cancelStreamBtn.addEventListener('click', () => {
+  stopCameraStream();
+  closeCameraOverlay();
+});
 
-  const inlineVideo = document.getElementById('inlineVideo');
-  inlineVideo.srcObject = stream;
-
-  document.getElementById('cancelStreamBtn').addEventListener('click', () => {
-    stopCameraStream();
-    render();
-  });
-
-  document.getElementById('takePhotoBtn').addEventListener('click', () => {
-    if (!inlineVideo.videoWidth) return;
-    const canvas = document.createElement("canvas");
-    canvas.width = inlineVideo.videoWidth;
-    canvas.height = inlineVideo.videoHeight;
-    canvas.getContext("2d").drawImage(inlineVideo, 0, 0, canvas.width, canvas.height);
-    stopCameraStream();
-    loadDataUrl(canvas.toDataURL("image/jpeg", 0.92));
-  });
-}
+takePhotoBtn.addEventListener('click', () => {
+  if (!inlineVideo.videoWidth) return;
+  const canvas = document.createElement("canvas");
+  canvas.width = inlineVideo.videoWidth;
+  canvas.height = inlineVideo.videoHeight;
+  canvas.getContext("2d").drawImage(inlineVideo, 0, 0, canvas.width, canvas.height);
+  stopCameraStream();
+  closeCameraOverlay();
+  loadDataUrl(canvas.toDataURL("image/jpeg", 0.92));
+});
 
 // --- Auto grid placement ---
 gridBtn.addEventListener('click', () => {
@@ -719,10 +773,6 @@ downloadBtn.addEventListener('click', async () => {
 
 // --- Render ---
 function render(){
-  if (isStreaming) return;
-
-  dot1.classList.toggle('active', !!photo);
-  dot2.classList.toggle('active', labels.length > 0);
   gridBtn.style.display = photo ? 'inline-block' : 'none';
 
   if (photo) {
