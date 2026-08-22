@@ -1,4 +1,4 @@
-const CACHE_NAME = 'type-check-v5.6'; 
+const CACHE_NAME = 'type-check-v5.7'; 
 const ASSETS = [
   './',
   './index.html',

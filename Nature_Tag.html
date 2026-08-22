@@ -609,8 +609,7 @@ function stopCameraStream(){
   isStreaming = false;
 }
 function updateOrientationFix() {
-  const angle = screen.orientation ? screen.orientation.angle : window.orientation || 0;
-  const isLandscape = Math.abs(angle) === 90;
+  const isLandscape = window.matchMedia('(orientation: landscape)').matches;
   cameraStage.classList.toggle('ios-landscape-fix', isLandscape);
 
   if (isLandscape) {
@@ -686,30 +685,42 @@ cancelStreamBtn.addEventListener('click', () => {
 takePhotoBtn.addEventListener('click', () => {
   if (!inlineVideo.videoWidth || !inlineVideo.videoHeight) return;
 
-  const vw = inlineVideo.videoWidth;
-  const vh = inlineVideo.videoHeight;
-  const targetAspect = 16 / 9;
-  const currentAspect = vw / vh;
+  const rawW = inlineVideo.videoWidth;
+  const rawH = inlineVideo.videoHeight;
+  const isRotated = cameraStage.classList.contains('ios-landscape-fix');
 
-  let sw = vw, sh = vh, sx = 0, sy = 0;
-
-  // Compute 16:9 crop bounds matching CSS object-fit: cover
-  if (currentAspect > targetAspect) {
-    sw = vh * targetAspect;
-    sx = (vw - sw) / 2;
+  // Step 1: bake the same rotation correction into an intermediate canvas
+  const rotW = isRotated ? rawH : rawW;
+  const rotH = isRotated ? rawW : rawH;
+  const rotCanvas = document.createElement('canvas');
+  rotCanvas.width = rotW;
+  rotCanvas.height = rotH;
+  const rotCtx = rotCanvas.getContext('2d');
+  if (isRotated) {
+    rotCtx.translate(rotW / 2, rotH / 2);
+    rotCtx.rotate(90 * Math.PI / 180);
+    rotCtx.drawImage(inlineVideo, -rawW / 2, -rawH / 2);
   } else {
-    sh = vw / targetAspect;
-    sy = (vh - sh) / 2;
+    rotCtx.drawImage(inlineVideo, 0, 0);
+  }
+
+  // Step 2: same 16:9 center-crop as before, now on the corrected frame
+  const targetAspect = 16 / 9;
+  const currentAspect = rotW / rotH;
+  let sw = rotW, sh = rotH, sx = 0, sy = 0;
+  if (currentAspect > targetAspect) {
+    sw = rotH * targetAspect;
+    sx = (rotW - sw) / 2;
+  } else {
+    sh = rotW / targetAspect;
+    sy = (rotH - sh) / 2;
   }
 
   const canvas = document.createElement("canvas");
   canvas.width = 1280;
   canvas.height = 720;
   const ctx = canvas.getContext("2d");
-
-
-  // Draw ONLY the cropped 16:9 viewport area
-  ctx.drawImage(inlineVideo, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+  ctx.drawImage(rotCanvas, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
 
   stopCameraStream();
   closeCameraOverlay();
