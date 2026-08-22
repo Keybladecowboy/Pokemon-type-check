@@ -1,8 +1,8 @@
-const CACHE_NAME = 'type-check-v5.3'; // <--- Bumped again: fullscreen camera + button/dot update
+const CACHE_NAME = 'type-check-v5.4'; 
 const ASSETS = [
   './',
   './index.html',
-  './Nature_Tag.html', // <--- Add your new page file name here
+  './Nature_Tag.html', 
   './manifest.json',
   './icon-192.png',
   './icon-512.png'

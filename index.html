@@ -68,9 +68,13 @@
     width:7px; height:7px; border-radius:50%;
     box-shadow:0 1px 2px rgba(0,0,0,.3), inset 0 0 0 1px rgba(255,255,255,.3);
   }
-  .status-dots .d1{background:#ff5c5c;}
+  .status-dots .d1{background:#ff5c5c; animation: red-glow 1.6s ease-in-out infinite;}
   .status-dots .d2{background:#ffd23f;}
   .status-dots .d3{background:#57d97a;}
+  @keyframes red-glow {
+    0%, 100% { box-shadow: 0 0 4px #ff5c5c, inset 0 0 0 1px rgba(255,255,255,.3); }
+    50%      { box-shadow: 0 0 11px 2px #ff5c5c, inset 0 0 0 1px rgba(255,255,255,.3); }
+  }
   .device-top .device-label{
     margin-left:auto;
     font-family:'JetBrains Mono', monospace;
@@ -345,14 +349,6 @@
     color:var(--dim);
     font-size:14px;
   }
-
-  footer{
-    text-align:center;
-    color:var(--dim);
-    font-size:12px;
-    margin-top:30px;
-    font-family:'JetBrains Mono', monospace;
-  }
 </style>
 </head>
 <body>
@@ -366,7 +362,7 @@
   <div class="screen">
   <header>
     <div class="eyebrow">Type Check // 001</div>
-    <h1>What beats what?</h1>
+    <h1>Type Matchups</h1>
     <p>Pick one or two types — or look a Pokémon up by name — to see every weakness, resistance, and immunity at a glance.</p>
   </header>
 

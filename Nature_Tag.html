@@ -416,7 +416,7 @@
   <div class="screen">
   <header>
     <div class="eyebrow">Nature Tagger // 002</div>
-    <h1>Tag team natures</h1>
+    <h1>Tag Natures</h1>
     <p>Load a team screenshot, place nature labels on each Pokémon, and download the annotated image.</p>
   </header>
 
@@ -473,8 +473,6 @@
   <button class="shutter-overlay-btn" id="takePhotoBtn" title="Capture frame"></button>
 </div>
 
-<footer>Nature Tag — pairs with Type Check</footer>
-</div>
 
 <script>
 // --- Nature reference data ---
@@ -508,12 +506,12 @@ const NATURES = [
 
 // Targets the bottom-right watermarked numbers (1-6) of each card slot
 const GRID_FALLBACK = [
-  { x: 44.2, y: 38.2, rotation: 0 },
-  { x: 86.2, y: 38.2, rotation: 0 },
-  { x: 44.2, y: 58.4, rotation: 0 },
-  { x: 86.2, y: 58.4, rotation: 0 },
-  { x: 44.2, y: 78.6, rotation: 0 },
-  { x: 86.2, y: 78.6, rotation: 0 },
+  { x: 26.0, y: 38.2, rotation: 0 },
+  { x: 68.0, y: 38.2, rotation: 0 },
+  { x: 26.0, y: 58.4, rotation: 0 },
+  { x: 68.0, y: 58.4, rotation: 0 },
+  { x: 26.0, y: 78.6, rotation: 0 },
+  { x: 68.0, y: 78.6, rotation: 0 },
 ];
 
 // --- State ---
@@ -609,8 +607,11 @@ function openCameraOverlay(){
   inlineVideo.srcObject = stream;
   const track = stream.getVideoTracks()[0];
   const settings = track && track.getSettings ? track.getSettings() : {};
-  const actualFacing = settings.facingMode || lastRequestedFacing;
-  cameraStage.classList.toggle('mirror', actualFacing !== 'environment');
+  
+  // Mirror ONLY if using front/selfie camera ('user')
+  const isFrontCam = settings.facingMode === 'user';
+  cameraStage.classList.toggle('mirror', isFrontCam);
+  
   cameraOverlay.classList.add('open');
 }
 
@@ -667,11 +668,38 @@ cancelStreamBtn.addEventListener('click', () => {
 });
 
 takePhotoBtn.addEventListener('click', () => {
-  if (!inlineVideo.videoWidth) return;
+  if (!inlineVideo.videoWidth || !inlineVideo.videoHeight) return;
+
+  const vw = inlineVideo.videoWidth;
+  const vh = inlineVideo.videoHeight;
+  const targetAspect = 16 / 9;
+  const currentAspect = vw / vh;
+
+  let sw = vw, sh = vh, sx = 0, sy = 0;
+
+  // Compute 16:9 crop bounds matching CSS object-fit: cover
+  if (currentAspect > targetAspect) {
+    sw = vh * targetAspect;
+    sx = (vw - sw) / 2;
+  } else {
+    sh = vw / targetAspect;
+    sy = (vh - sh) / 2;
+  }
+
   const canvas = document.createElement("canvas");
-  canvas.width = inlineVideo.videoWidth;
-  canvas.height = inlineVideo.videoHeight;
-  canvas.getContext("2d").drawImage(inlineVideo, 0, 0, canvas.width, canvas.height);
+  canvas.width = 1280;
+  canvas.height = 720;
+  const ctx = canvas.getContext("2d");
+
+  // Mirror drawn frame only if camera is mirrored
+  if (cameraStage.classList.contains('mirror')) {
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+  }
+
+  // Draw ONLY the cropped 16:9 viewport area
+  ctx.drawImage(inlineVideo, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+
   stopCameraStream();
   closeCameraOverlay();
   loadDataUrl(canvas.toDataURL("image/jpeg", 0.92));
