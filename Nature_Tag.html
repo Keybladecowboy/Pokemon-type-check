@@ -275,11 +275,11 @@
     object-fit:cover;
     display:block;
   }
-  .camera-stage.ios-landscape-fix video {
+ .camera-stage.ios-landscape-fix video {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) rotate(90deg);
+  transform: translate(-50%, -50%) rotate(-90deg);
   object-fit: cover;
 }
 
@@ -462,7 +462,6 @@
 <input id="cameraInput" type="file" accept="image/*" capture="environment">
 
 <div class="camera-overlay" id="cameraOverlay">
-  <div id="debugOrientation" style="position:absolute; top:16px; left:16px; background:rgba(0,0,0,.8); color:#0f0; font-family:monospace; font-size:12px; padding:6px 10px; border-radius:6px; z-index:2000;">checking…</div>
   <button class="cancel-overlay-btn" id="cancelStreamBtn">✕</button>
   <div class="camera-frame">
     <div class="camera-stage" id="cameraStage">
@@ -611,8 +610,6 @@ function stopCameraStream(){
 }
 function updateOrientationFix() {
   const isLandscape = window.matchMedia('(orientation: landscape)').matches;
-  document.getElementById('debugOrientation').textContent =
-  'landscape: ' + isLandscape + ' | class: ' + cameraStage.classList.contains('ios-landscape-fix');
   cameraStage.classList.toggle('ios-landscape-fix', isLandscape);
 
   if (isLandscape) {
@@ -701,7 +698,7 @@ takePhotoBtn.addEventListener('click', () => {
   const rotCtx = rotCanvas.getContext('2d');
   if (isRotated) {
     rotCtx.translate(rotW / 2, rotH / 2);
-    rotCtx.rotate(90 * Math.PI / 180);
+    rotCtx.rotate(-90 * Math.PI / 180);   
     rotCtx.drawImage(inlineVideo, -rawW / 2, -rawH / 2);
   } else {
     rotCtx.drawImage(inlineVideo, 0, 0);
