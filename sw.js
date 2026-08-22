@@ -1,4 +1,4 @@
-const CACHE_NAME = 'type-check-v4_2'; // <--- Bumped version number
+const CACHE_NAME = 'type-check-v5'; // <--- Bumped version number
 const ASSETS = [
   './',
   './index.html',

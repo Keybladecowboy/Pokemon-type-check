@@ -3,7 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nature Tagger</title>
+<title>Nature Tag</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#161213">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Nature Tag">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
@@ -15,6 +22,7 @@
     --text:#f7eeee;
     --dim:#a68a8a;
     --accent:#e0242a;
+    --good:#57d97a;
   }
   *{box-sizing:border-box;}
   body{
@@ -30,11 +38,16 @@
   }
   .wrap{max-width:720px; margin:0 auto;}
 
+  /* --- Handheld device frame --- */
   .device-frame{
-    background: linear-gradient(155deg, #ec3a3f 0%, #c81820 55%, #a3141a 100%);
+    background:
+      linear-gradient(155deg, #ec3a3f 0%, #c81820 55%, #a3141a 100%);
     border-radius:26px;
     padding:14px 14px 20px;
-    box-shadow: 0 12px 30px rgba(0,0,0,.45), inset 0 2px 0 rgba(255,255,255,.25), inset 0 -6px 14px rgba(0,0,0,.25);
+    box-shadow:
+      0 12px 30px rgba(0,0,0,.45),
+      inset 0 2px 0 rgba(255,255,255,.25),
+      inset 0 -6px 14px rgba(0,0,0,.25);
     margin-bottom:8px;
   }
   .device-top{
@@ -55,10 +68,14 @@
   .status-dots span{
     width:7px; height:7px; border-radius:50%;
     box-shadow:0 1px 2px rgba(0,0,0,.3), inset 0 0 0 1px rgba(255,255,255,.3);
+    transition:background .2s, box-shadow .2s;
   }
-  .status-dots .d1{background:#ff5c5c;}
-  .status-dots .d2{background:#ffd23f;}
-  .status-dots .d3{background:#57d97a;}
+  .status-dots .d1{background:#502020;}
+  .status-dots .d1.active{background:#ff5c5c; box-shadow:0 0 6px #ff5c5c;}
+  .status-dots .d2{background:#504020;}
+  .status-dots .d2.active{background:#ffd23f; box-shadow:0 0 6px #ffd23f;}
+  .status-dots .d3{background:#205020;}
+  .status-dots .d3.active{background:var(--good); box-shadow:0 0 6px var(--good);}
   .device-top .device-label{
     margin-left:auto;
     font-family:'JetBrains Mono', monospace;
@@ -72,7 +89,9 @@
     background:var(--bg);
     border-radius:16px;
     padding:20px 16px 8px;
-    box-shadow: inset 0 0 0 2px rgba(0,0,0,.35), inset 0 3px 10px rgba(0,0,0,.5);
+    box-shadow:
+      inset 0 0 0 2px rgba(0,0,0,.35),
+      inset 0 3px 10px rgba(0,0,0,.5);
   }
 
   .device-bottom{
@@ -87,17 +106,23 @@
     background:rgba(0,0,0,.25);
     border:1px solid rgba(255,255,255,.15);
     color:rgba(255,255,255,.85);
-    font-size:11px;
+    font-size:12px;
     font-weight:600;
-    padding:8px 12px;
+    padding:8px 14px;
     border-radius:8px;
     cursor:pointer;
     font-family:'Space Grotesk', sans-serif;
+    text-decoration:none;
     box-shadow:inset 0 1px 2px rgba(0,0,0,.3);
   }
-  .bezel-btn:hover{background:rgba(0,0,0,.35); border-color:rgba(255,255,255,.3);}
-  .bezel-btn:disabled{opacity:0.4; cursor:not-allowed;}
-  .bezel-btn.accent{background:var(--accent); color:#fff;}
+  .bezel-btn:hover:not(:disabled){background:rgba(0,0,0,.35); border-color:rgba(255,255,255,.3);}
+  .bezel-btn:disabled{opacity:.4; cursor:not-allowed;}
+  .bezel-btn.accent{
+    background:var(--accent);
+    color:#ffffff;
+    border-color:var(--accent);
+  }
+  .bezel-btn.accent:hover:not(:disabled){background:#c81f24; border-color:#c81f24;}
   .speaker-lines{
     display:flex;
     flex-direction:column;
@@ -113,7 +138,7 @@
   .speaker-lines span:nth-child(2){width:44px;}
   .speaker-lines span:nth-child(3){width:52px;}
 
-  header{margin-bottom:28px;}
+  header{margin-bottom:24px;}
   .eyebrow{
     font-family:'JetBrains Mono', monospace;
     font-size:11px;
@@ -123,14 +148,14 @@
     margin-bottom:8px;
   }
   h1{
-    font-size:clamp(28px,7vw,40px);
+    font-size:clamp(24px,6vw,36px);
     font-weight:700;
     margin:0 0 8px;
     letter-spacing:-0.02em;
   }
   header p{
     color:var(--dim);
-    font-size:14.5px;
+    font-size:13.5px;
     line-height:1.5;
     margin:0;
     max-width:52ch;
@@ -140,18 +165,25 @@
     background:var(--panel);
     border:1px solid var(--line);
     border-radius:16px;
-    padding:20px;
+    padding:16px;
     margin-bottom:16px;
   }
+  .card-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:12px;
+  }
   .card h2{
-    font-size:12px;
+    font-size:11px;
     letter-spacing:.14em;
     text-transform:uppercase;
     color:var(--dim);
-    margin:0 0 14px;
+    margin:0;
     font-weight:600;
   }
 
+  /* Photo preview + live capture overlay */
   .preview-box{
     width:100%;
     aspect-ratio:3/2;
@@ -163,63 +195,111 @@
     justify-content:center;
     overflow:hidden;
     position:relative;
-    margin-bottom:14px;
   }
-  .preview-box img{
-    width:100%;
-    height:100%;
-    object-fit:contain;
+  .preview-box img{width:100%; height:100%; object-fit:contain; pointer-events:none;}
+  .preview-box video{width:100%; height:100%; object-fit:cover;}
+  .preview-placeholder{color:var(--dim); font-size:13px; text-align:center;}
+
+  .preview-overlay-grid{
+    position:absolute;
+    inset:8px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-template-rows:repeat(3, 1fr);
+    gap:6px;
+    pointer-events:none;
+    z-index:2;
   }
-  .preview-placeholder{
-    color:var(--dim);
-    font-size:13px;
-    text-align:center;
+  .preview-slot-box{
+    border:2px dashed rgba(255,255,255,.7);
+    border-radius:6px;
+    background:rgba(255,255,255,.05);
+    display:flex;
+    align-items:flex-end;
+    justify-content:flex-end;
+    padding:4px 6px;
+  }
+  .preview-slot-num{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    font-weight:700;
+    color:#fff;
+    background:rgba(224,36,42,.9);
+    padding:1px 5px;
+    border-radius:3px;
+  }
+  .shutter-overlay-btn{
+    position:absolute;
+    bottom:12px;
+    left:50%;
+    transform:translateX(-50%);
+    width:50px; height:50px;
+    border-radius:50%;
+    background:#fff;
+    border:4px solid rgba(255,255,255,.5);
+    cursor:pointer;
+    box-shadow:0 0 12px rgba(0,0,0,.5);
+    z-index:10;
+  }
+  .shutter-overlay-btn:active{transform:translateX(-50%) scale(.92);}
+  .cancel-overlay-btn{
+    position:absolute;
+    top:8px; right:8px;
+    background:rgba(0,0,0,.6);
+    border:1px solid rgba(255,255,255,.3);
+    color:#fff;
+    border-radius:50%;
+    width:28px; height:28px;
+    cursor:pointer;
+    z-index:10;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
   }
 
   .label-overlay{
     position:absolute;
     font-family:'Space Grotesk', sans-serif;
     font-weight:700;
-    font-size:12px;
+    font-size:clamp(10px, 2.2vw, 14px);
     cursor:grab;
     user-select:none;
     touch-action:none;
-    padding:4px 8px;
+    padding:2px 6px;
+    white-space:nowrap;
   }
   .label-overlay:active{cursor:grabbing;}
-  .label-overlay.active{
-    outline:2px dashed var(--accent);
-    outline-offset:3px;
-  }
+  .label-overlay.active{outline:2px dashed var(--accent); outline-offset:3px;}
 
+  /* Roster — one row per tagged Pokémon */
   .roster-item{
     display:flex;
-    align-items:center;
-    gap:12px;
-    padding:12px;
-    margin-bottom:10px;
-    background:rgba(255,255,255,.02);
+    flex-direction:column;
+    gap:8px;
+    padding:10px 12px;
+    margin-bottom:8px;
+    background:var(--panel-2);
     border:1px solid var(--line);
     border-radius:10px;
     cursor:pointer;
   }
-  .roster-item:hover{border-color:var(--accent); background:rgba(224,36,42,.05);}
+  .roster-item:hover{border-color:var(--accent);}
   .roster-item.active{border-color:var(--accent); background:rgba(224,36,42,.1);}
 
+  .roster-main-row{display:flex; align-items:center; gap:10px;}
   .roster-index{
     display:flex;
     align-items:center;
     justify-content:center;
-    width:28px;
-    height:28px;
+    width:26px; height:26px;
     border-radius:50%;
     border:1px solid var(--dim);
-    font-size:12px;
+    font-size:11px;
     font-weight:700;
     flex-shrink:0;
   }
-
-  .roster-nature select{
+  .roster-nature{
     background:#12131c;
     border:1px solid var(--line);
     border-radius:6px;
@@ -230,23 +310,42 @@
     cursor:pointer;
     flex:1;
   }
+  .roster-nature:focus{outline:2px solid var(--accent); outline-offset:-1px;}
+  .roster-delete{color:var(--accent); background:none; border:none; font-size:14px; cursor:pointer; padding:4px;}
 
-  .roster-delete{
+  .roster-tools{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    font-size:11px;
+    color:var(--dim);
+    padding-top:6px;
+    border-top:1px dashed var(--line);
+  }
+  .roster-tools label{display:flex; align-items:center; gap:6px; flex:1;}
+  .roster-tools input[type="range"]{flex:1; accent-color:var(--accent);}
+
+  .tag-count{
+    font-size:11px;
+    font-weight:600;
     color:var(--accent);
-    background:none;
-    border:none;
-    font-size:14px;
-    cursor:pointer;
-    padding:0;
   }
 
-  input[type="file"]{ display:none; }
-  
-  .footer-hint{
+  .empty-state{
+    text-align:center;
+    padding:30px 10px;
+    color:var(--dim);
+    font-size:14px;
+  }
+
+  input[type="file"]{display:none;}
+
+  footer{
     text-align:center;
     color:var(--dim);
     font-size:12px;
-    margin-top:16px;
+    margin-top:30px;
+    font-family:'JetBrains Mono', monospace;
   }
 </style>
 </head>
@@ -255,7 +354,11 @@
 <div class="device-frame">
   <div class="device-top">
     <div class="lens"></div>
-    <div class="status-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+    <div class="status-dots">
+      <span class="d1" id="dot1"></span>
+      <span class="d2" id="dot2"></span>
+      <span class="d3 active"></span>
+    </div>
     <a href="./index.html" class="device-label" style="cursor:pointer; text-decoration:none; background:#a9a9a9; color:#ffffff; padding:6px 12px; border-radius:6px; border:1px solid #888; display:inline-block; transition:.15s; box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 2px 4px rgba(0,0,0,.3); font-weight:600;">Type Check</a>
   </div>
   <div class="screen">
@@ -266,24 +369,27 @@
   </header>
 
   <div class="card">
-    <h2>Load Photo</h2>
+    <div class="card-header">
+      <h2>Load photo</h2>
+      <button class="bezel-btn" id="gridBtn" style="display:none;">🎯 Auto 6-grid</button>
+    </div>
     <div class="preview-box" id="previewBox">
       <div class="preview-placeholder">No photo loaded</div>
     </div>
   </div>
 
   <div class="card" id="rosterCard" style="display:none;">
-    <h2>Label Natures</h2>
+    <div class="card-header">
+      <h2>Label natures</h2>
+      <span class="tag-count" id="tagCount">0 tagged</span>
+    </div>
     <div id="rosterList"></div>
   </div>
 
-  <div class="footer-hint" id="hint">
-    Tap "Photo" or "Library" to load a team screenshot.
+  <div class="card" id="hintCard">
+    <div class="empty-state" id="hint">Tap "Photo" or "Library" below to load a team screenshot.</div>
   </div>
   </div>
-
-  <input id="fileInput" type="file" accept="image/*">
-  <input id="cameraInput" type="file" accept="image/*" capture="environment">
 
   <div class="device-bottom">
     <button class="bezel-btn" id="cameraBtn">📷 Photo</button>
@@ -293,9 +399,15 @@
     <div class="speaker-lines"><span></span><span></span><span></span></div>
   </div>
 </div>
+
+<input id="fileInput" type="file" accept="image/*">
+<input id="cameraInput" type="file" accept="image/*" capture="environment">
+
+<footer>Nature Tag — pairs with Type Check</footer>
 </div>
 
 <script>
+// --- Nature reference data ---
 const NATURES = [
   { name: "Adamant", up: "Atk", down: "SpA" },
   { name: "Bold", up: "Def", down: "Atk" },
@@ -324,15 +436,30 @@ const NATURES = [
   { name: "Quirky", up: null, down: null },
 ];
 
+// Targets the bottom-right numbers (1-6) of each card slot on a standard team-preview grid
+const GRID_FALLBACK = [
+  { x: 23.5, y: 37.5, rotation: 0 },
+  { x: 71,   y: 37.5, rotation: 0 },
+  { x: 23.5, y: 55.5, rotation: 0 },
+  { x: 70,   y: 55.5, rotation: 0 },
+  { x: 23.5, y: 73.5, rotation: 0 },
+  { x: 71,   y: 73.5, rotation: 0 },
+];
+
+// --- State ---
 let photo = null;
 let photoDims = { w: 0, h: 0 };
 let labels = [];
 let activeId = null;
 let dragId = null;
+let stream = null;
+let isStreaming = false;
 
+// --- DOM references ---
 const previewBox = document.getElementById('previewBox');
 const rosterCard = document.getElementById('rosterCard');
 const rosterList = document.getElementById('rosterList');
+const hintCard = document.getElementById('hintCard');
 const hint = document.getElementById('hint');
 const fileInput = document.getElementById('fileInput');
 const cameraInput = document.getElementById('cameraInput');
@@ -340,105 +467,164 @@ const cameraBtn = document.getElementById('cameraBtn');
 const libraryBtn = document.getElementById('libraryBtn');
 const clearAllBtn = document.getElementById('clearAllBtn');
 const downloadBtn = document.getElementById('downloadBtn');
+const gridBtn = document.getElementById('gridBtn');
+const dot1 = document.getElementById('dot1');
+const dot2 = document.getElementById('dot2');
+const tagCount = document.getElementById('tagCount');
 
-cameraBtn.addEventListener('click', () => cameraInput.click());
+try {
+  const saved = localStorage.getItem("nature-tagger:labels");
+  if (saved) labels = JSON.parse(saved);
+} catch(e){}
+
+function saveState(){
+  try { localStorage.setItem("nature-tagger:labels", JSON.stringify(labels)); } catch(e){}
+}
+
+function newLabel(x, y, rotation = 0){
+  return {
+    id: `lbl-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    nature: '',
+    x, y, rotation, size: 1, color: '#ffffff'
+  };
+}
+
+// --- Photo loading (library / file input) ---
 libraryBtn.addEventListener('click', () => fileInput.click());
 
 fileInput.addEventListener('change', (e) => {
   const file = e.target.files?.[0];
-  if (!file) return;
-  loadFile(file);
+  if (file) loadFile(file);
 });
 
 cameraInput.addEventListener('change', (e) => {
   const file = e.target.files?.[0];
-  if (!file) return;
-  loadFile(file);
+  if (file) loadFile(file);
 });
 
-function loadFile(file) {
+function loadFile(file){
   const reader = new FileReader();
-  reader.onload = (e) => {
-    const img = new Image();
-    img.onload = () => {
-      photo = e.target.result;
-      photoDims = { w: img.naturalWidth, h: img.naturalHeight };
-      labels = [];
-      render();
-    };
-    img.src = e.target.result;
-  };
+  reader.onload = (e) => loadDataUrl(e.target.result);
   reader.readAsDataURL(file);
 }
 
-function newLabel(x, y) {
-  return {
-    id: `lbl-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    nature: '',
-    x, y,
-    color: '#ffffff',
+function loadDataUrl(url){
+  stopCameraStream();
+  const img = new Image();
+  img.onload = () => {
+    photo = url;
+    photoDims = { w: img.naturalWidth, h: img.naturalHeight };
+    labels = [];
+    activeId = null;
+    render();
   };
+  img.src = url;
 }
 
-function render() {
-  if (photo) {
-    previewBox.innerHTML = `<img src="${photo}" alt="Team">`;
-    labels.forEach(l => {
-      const label = document.createElement('div');
-      label.className = `label-overlay ${activeId === l.id ? 'active' : ''}`;
-      label.style.left = `${l.x}%`;
-      label.style.top = `${l.y}%`;
-      label.style.transform = 'translate(-50%, -50%)';
-      label.style.color = l.color;
-      label.textContent = l.nature || '?';
-      label.addEventListener('mousedown', (e) => onLabelDown(e, l.id));
-      label.addEventListener('touchstart', (e) => onLabelDown(e, l.id));
-      previewBox.appendChild(label);
-    });
-  } else {
-    previewBox.innerHTML = '<div class="preview-placeholder">No photo loaded</div>';
+// --- Live camera capture ---
+function stopCameraStream(){
+  if (stream) {
+    stream.getTracks().forEach(t => t.stop());
+    stream = null;
   }
-
-  if (labels.length > 0) {
-    rosterCard.style.display = 'block';
-    hint.style.display = 'none';
-    rosterList.innerHTML = labels.map((l, i) => `
-      <div class="roster-item ${activeId === l.id ? 'active' : ''}" onclick="setActive('${l.id}')">
-        <div class="roster-index">${i + 1}</div>
-        <select class="roster-nature" onchange="updateLabel('${l.id}', this.value)" onclick="event.stopPropagation()">
-          <option value="">Nature…</option>
-          ${NATURES.map(n => `<option value="${n.name}" ${l.nature === n.name ? 'selected' : ''}>${n.name}${n.up ? ` (+${n.up}/-${n.down})` : ' (neutral)'}</option>`).join('')}
-        </select>
-        <button class="roster-delete" onclick="event.stopPropagation(); removeLabel('${l.id}')">✕</button>
-      </div>
-    `).join('');
-  } else {
-    rosterCard.style.display = 'none';
-    hint.style.display = 'block';
-  }
-
-  clearAllBtn.disabled = labels.length === 0;
-  downloadBtn.disabled = !photo || labels.length === 0;
+  isStreaming = false;
 }
 
-function setActive(id) {
+cameraBtn.addEventListener('click', async () => {
+  if (window.location.protocol === 'file:') {
+    alert("Webcams require Live Server to run. Opening file chooser instead.");
+    cameraInput.click();
+    return;
+  }
+
+  try {
+    let constraints = { video: true, audio: false };
+
+    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(d => d.kind === 'videoinput');
+      const iriun = videoDevices.find(d => d.label.toLowerCase().includes('iriun'));
+
+      constraints = iriun
+        ? { video: { deviceId: { exact: iriun.deviceId } }, audio: false }
+        : { video: { facingMode: "environment" }, audio: false };
+    }
+
+    try {
+      stream = await navigator.mediaDevices.getUserMedia(constraints);
+    } catch (e) {
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    }
+
+    isStreaming = true;
+    renderStreamingView();
+
+  } catch (err) {
+    console.error("Camera access failed:", err);
+    alert("Could not access webcam. Make sure Iriun is running and camera permissions are granted.");
+    cameraInput.click();
+  }
+});
+
+function renderStreamingView(){
+  previewBox.innerHTML = `
+    <video id="inlineVideo" autoplay playsinline muted></video>
+    <div class="preview-overlay-grid">
+      <div class="preview-slot-box"><span class="preview-slot-num">1</span></div>
+      <div class="preview-slot-box"><span class="preview-slot-num">2</span></div>
+      <div class="preview-slot-box"><span class="preview-slot-num">3</span></div>
+      <div class="preview-slot-box"><span class="preview-slot-num">4</span></div>
+      <div class="preview-slot-box"><span class="preview-slot-num">5</span></div>
+      <div class="preview-slot-box"><span class="preview-slot-num">6</span></div>
+    </div>
+    <button class="cancel-overlay-btn" id="cancelStreamBtn">✕</button>
+    <button class="shutter-overlay-btn" id="takePhotoBtn" title="Capture frame"></button>
+  `;
+
+  const inlineVideo = document.getElementById('inlineVideo');
+  inlineVideo.srcObject = stream;
+
+  document.getElementById('cancelStreamBtn').addEventListener('click', () => {
+    stopCameraStream();
+    render();
+  });
+
+  document.getElementById('takePhotoBtn').addEventListener('click', () => {
+    if (!inlineVideo.videoWidth) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = inlineVideo.videoWidth;
+    canvas.height = inlineVideo.videoHeight;
+    canvas.getContext("2d").drawImage(inlineVideo, 0, 0, canvas.width, canvas.height);
+    stopCameraStream();
+    loadDataUrl(canvas.toDataURL("image/jpeg", 0.92));
+  });
+}
+
+// --- Auto grid placement ---
+gridBtn.addEventListener('click', () => {
+  labels = GRID_FALLBACK.map(s => newLabel(s.x, s.y, s.rotation));
+  activeId = null;
+  render();
+});
+
+// --- Label roster (list of tagged Pokémon, mirrors the type-grid pattern) ---
+function setActive(id){
   activeId = activeId === id ? null : id;
   render();
 }
 
-function updateLabel(id, nature) {
+function updateLabel(id, key, val){
   const l = labels.find(x => x.id === id);
-  if (l) l.nature = nature;
+  if (l) l[key] = val;
   render();
 }
 
-function removeLabel(id) {
+function removeLabel(id){
   labels = labels.filter(l => l.id !== id);
   if (activeId === id) activeId = null;
   render();
 }
 
-// Add label by clicking preview
 previewBox.addEventListener('click', (e) => {
   if (!photo || e.target !== previewBox) return;
   const rect = previewBox.getBoundingClientRect();
@@ -450,12 +636,13 @@ previewBox.addEventListener('click', (e) => {
   render();
 });
 
-function onLabelDown(e, id) {
+function onLabelDown(e, id){
   e.preventDefault();
+  e.stopPropagation();
   setActive(id);
   dragId = id;
 
-  function move(ev) {
+  function move(ev){
     const rect = previewBox.getBoundingClientRect();
     const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
     const clientY = ev.touches ? ev.touches[0].clientY : ev.clientY;
@@ -464,14 +651,10 @@ function onLabelDown(e, id) {
     x = Math.max(2, Math.min(98, x));
     y = Math.max(2, Math.min(98, y));
     const l = labels.find(lbl => lbl.id === dragId);
-    if (l) {
-      l.x = x;
-      l.y = y;
-      render();
-    }
+    if (l) { l.x = x; l.y = y; render(); }
   }
 
-  function up() {
+  function up(){
     dragId = null;
     window.removeEventListener('pointermove', move);
     window.removeEventListener('pointerup', up);
@@ -491,6 +674,7 @@ clearAllBtn.addEventListener('click', () => {
   render();
 });
 
+// --- Export annotated image ---
 downloadBtn.addEventListener('click', async () => {
   if (!photo || !photoDims.w) return;
   downloadBtn.disabled = true;
@@ -501,10 +685,7 @@ downloadBtn.addEventListener('click', async () => {
   const ctx = canvas.getContext('2d');
 
   const img = new Image();
-  await new Promise(res => {
-    img.onload = res;
-    img.src = photo;
-  });
+  await new Promise(res => { img.onload = res; img.src = photo; });
 
   ctx.drawImage(img, 0, 0, photoDims.w, photoDims.h);
 
@@ -512,16 +693,17 @@ downloadBtn.addEventListener('click', async () => {
     if (!l.nature) return;
     const px = (l.x / 100) * photoDims.w;
     const py = (l.y / 100) * photoDims.h;
-    const fontSize = photoDims.w / 20;
+    const fontSize = (photoDims.w / 24) * (l.size || 1);
     ctx.save();
     ctx.translate(px, py);
-    ctx.font = `bold ${fontSize}px 'Space Grotesk'`;
+    ctx.rotate(((l.rotation || 0) * Math.PI) / 180);
+    ctx.font = `700 ${fontSize}px 'Space Grotesk', sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.lineWidth = fontSize * 0.08;
-    ctx.strokeStyle = l.color === '#ffffff' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)';
+    ctx.strokeStyle = l.color === '#ffffff' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.6)';
     ctx.strokeText(l.nature, 0, 0);
-    ctx.fillStyle = l.color;
+    ctx.fillStyle = l.color || '#ffffff';
     ctx.fillText(l.nature, 0, 0);
     ctx.restore();
   });
@@ -535,7 +717,71 @@ downloadBtn.addEventListener('click', async () => {
   downloadBtn.disabled = false;
 });
 
+// --- Render ---
+function render(){
+  if (isStreaming) return;
+
+  dot1.classList.toggle('active', !!photo);
+  dot2.classList.toggle('active', labels.length > 0);
+  gridBtn.style.display = photo ? 'inline-block' : 'none';
+
+  if (photo) {
+    previewBox.innerHTML = `<img src="${photo}" alt="Team">`;
+    labels.forEach(l => {
+      const label = document.createElement('div');
+      label.className = `label-overlay ${activeId === l.id ? 'active' : ''}`;
+      label.style.left = `${l.x}%`;
+      label.style.top = `${l.y}%`;
+      label.style.transform = `translate(-50%, -50%) rotate(${l.rotation || 0}deg) scale(${l.size || 1})`;
+      label.style.color = l.color;
+      label.textContent = l.nature || '?';
+      label.addEventListener('mousedown', (e) => onLabelDown(e, l.id));
+      label.addEventListener('touchstart', (e) => onLabelDown(e, l.id));
+      previewBox.appendChild(label);
+    });
+  } else {
+    previewBox.innerHTML = '<div class="preview-placeholder">No photo loaded</div>';
+  }
+
+  if (labels.length > 0) {
+    rosterCard.style.display = 'block';
+    hintCard.style.display = 'none';
+    tagCount.textContent = `${labels.filter(l => l.nature).length} tagged`;
+    rosterList.innerHTML = labels.map((l, i) => `
+      <div class="roster-item ${activeId === l.id ? 'active' : ''}" onclick="setActive('${l.id}')">
+        <div class="roster-main-row">
+          <div class="roster-index">${i + 1}</div>
+          <select class="roster-nature" onchange="updateLabel('${l.id}', 'nature', this.value)" onclick="event.stopPropagation()">
+            <option value="">Nature…</option>
+            ${NATURES.map(n => `<option value="${n.name}" ${l.nature === n.name ? 'selected' : ''}>${n.name}${n.up ? ` (+${n.up}/-${n.down})` : ' (neutral)'}</option>`).join('')}
+          </select>
+          <button class="roster-delete" onclick="event.stopPropagation(); removeLabel('${l.id}')">✕</button>
+        </div>
+        ${activeId === l.id ? `
+          <div class="roster-tools" onclick="event.stopPropagation()">
+            <label><span>Size:</span><input type="range" min="0.6" max="1.8" step="0.1" value="${l.size || 1}" oninput="updateLabel('${l.id}', 'size', parseFloat(this.value))"></label>
+            <label><span>Rotate:</span><input type="range" min="-45" max="45" step="1" value="${l.rotation || 0}" oninput="updateLabel('${l.id}', 'rotation', parseInt(this.value))"></label>
+          </div>
+        ` : ''}
+      </div>
+    `).join('');
+  } else {
+    rosterCard.style.display = 'none';
+    hintCard.style.display = 'block';
+  }
+
+  clearAllBtn.disabled = labels.length === 0;
+  downloadBtn.disabled = !photo || labels.length === 0;
+  saveState();
+}
+
 render();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => { /* ignore on unsupported hosts */ });
+  });
+}
 </script>
 </body>
 </html>
