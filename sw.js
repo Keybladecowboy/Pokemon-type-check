@@ -1,8 +1,10 @@
-const CACHE_NAME = 'type-check-v5.9'; 
+const CACHE_NAME = 'type-check-v6'; 
 const ASSETS = [
   './',
   './index.html',
-  './Nature_Tag.html', 
+  './Nature_Tag.html',
+  './Dex.html',
+  './roster.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'

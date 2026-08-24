@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dex</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#161213">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dex">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  :root{
+    --bg:#161213;
+    --panel:#201819;
+    --panel-2:#2a1c1d50;
+    --line:#3a2224;
+    --text:#f7eeee;
+    --dim:#a68a8a;
+    --accent:#e0242a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 15% 0%, #2a1414 0%, transparent 45%),
+      radial-gradient(circle at 100% 30%, #241010 0%, transparent 40%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Space Grotesk', sans-serif;
+    min-height:100vh;
+    padding:20px 12px 50px;
+  }
+  .wrap{max-width:720px; margin:0 auto;}
+
+  /* --- Handheld device frame --- */
+  .device-frame{
+    background:
+      linear-gradient(155deg, #ec3a3f 0%, #c81820 55%, #a3141a 100%);
+    border-radius:26px;
+    padding:14px 14px 20px;
+    box-shadow:
+      0 12px 30px rgba(0,0,0,.45),
+      inset 0 2px 0 rgba(255,255,255,.25),
+      inset 0 -6px 14px rgba(0,0,0,.25);
+    margin-bottom:8px;
+  }
+  .device-top{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:4px 6px 14px;
+  }
+  .lens{
+    width:30px; height:30px;
+    border-radius:50%;
+    background:radial-gradient(circle at 32% 30%, #d8f4ff 0%, #6fc3ef 35%, #1c7fb8 70%, #0e4d70 100%);
+    border:3px solid #fff;
+    box-shadow:0 0 0 2px rgba(0,0,0,.2), 0 2px 4px rgba(0,0,0,.3);
+    flex-shrink:0;
+  }
+  .status-dots{display:flex; gap:5px; margin-left:2px;}
+  .status-dots span{
+    width:7px; height:7px; border-radius:50%;
+    box-shadow:0 1px 2px rgba(0,0,0,.3), inset 0 0 0 1px rgba(255,255,255,.3);
+  }
+  .status-dots .d1{background:#ff5c5c;}
+  .status-dots .d2{background:#ffd23f;}
+  .status-dots .d3{background:#57d97a;}
+  .status-dots .d3.pulsing{animation: green-glow 1.6s ease-in-out infinite;}
+  @keyframes green-glow {
+    0%, 100% { box-shadow: 0 0 4px #57d97a, inset 0 0 0 1px rgba(255,255,255,.3); }
+    50%      { box-shadow: 0 0 11px 2px #57d97a, inset 0 0 0 1px rgba(255,255,255,.3); }
+  }
+  .device-top .device-label{
+    margin-left:auto;
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    letter-spacing:.14em;
+    color:rgba(255,255,255,.75);
+    text-transform:uppercase;
+  }
+
+  .screen{
+    background:var(--bg);
+    border-radius:16px;
+    padding:20px 16px 8px;
+    box-shadow:
+      inset 0 0 0 2px rgba(0,0,0,.35),
+      inset 0 3px 10px rgba(0,0,0,.5);
+  }
+
+  .device-bottom{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 10px 2px;
+  }
+  .bezel-btn{
+    background:#a9a9a9;
+    border:1px solid #888;
+    color:#ffffff;
+    font-size:12px;
+    font-weight:600;
+    padding:8px 14px;
+    border-radius:8px;
+    cursor:pointer;
+    font-family:'Space Grotesk', sans-serif;
+    text-decoration:none;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 2px 4px rgba(0,0,0,.3);
+    transition:.15s;
+  }
+  .bezel-btn:hover{
+    background:#b8b8b8;
+    border-color:#999;
+  }
+  .speaker-lines{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    align-items:flex-end;
+  }
+  .speaker-lines span{
+    display:block;
+    width:60px; height:4px;
+    border-radius:2px;
+    background:rgba(0,0,0,.3);
+    box-shadow:0 1px 0 rgba(255,255,255,.12);
+  }
+  .speaker-lines span:nth-child(2){width:44px;}
+  .speaker-lines span:nth-child(3){width:52px;}
+
+  header{margin-bottom:28px;}
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin-bottom:8px;
+  }
+  h1{
+    font-size:clamp(28px,7vw,40px);
+    font-weight:700;
+    margin:0 0 8px;
+    letter-spacing:-0.02em;
+  }
+  header p{
+    color:var(--dim);
+    font-size:14.5px;
+    line-height:1.5;
+    margin:0;
+    max-width:52ch;
+  }
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:20px;
+    margin-bottom:16px;
+  }
+  .card h2{
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--dim);
+    margin:0 0 14px;
+    font-weight:600;
+  }
+
+  /* Search */
+  .lookup-row{display:flex; gap:8px;}
+  .lookup-row input{
+    flex:1;
+    background:#12131c;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px 14px;
+    color:var(--text);
+    font-family:'Space Grotesk', sans-serif;
+    font-size:15px;
+  }
+  .lookup-row input:focus{outline:2px solid var(--accent); outline-offset:-1px;}
+  .lookup-row button{
+    background:var(--accent);
+    color:#ffffff;
+    border:none;
+    border-radius:10px;
+    padding:0 18px;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    font-family:'Space Grotesk', sans-serif;
+  }
+  .lookup-row button:active{transform:translateY(1px);}
+
+  .box-card{padding:12px;}
+  .box-header{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding:0 2px;}
+  .box-title{font-family:'JetBrains Mono', monospace; font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim);}
+  .box-count{font-family:'JetBrains Mono', monospace; font-size:9.5px; color:var(--accent);}
+  .box-grid{
+    display:grid;
+    grid-template-columns:repeat(6, 1fr);
+    gap:10px 6px;
+    background:#100d0d;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:14px 10px;
+    max-height:420px;
+    overflow-y:auto;
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+  .box-grid::-webkit-scrollbar{
+    display:none;
+  }
+  .box-slot{
+    aspect-ratio:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:7px;
+    color:var(--dim);
+    font-family:'JetBrains Mono', monospace;
+    text-align:center;
+    cursor:pointer;
+    position:relative;
+    min-height:46px;
+    transition:transform .1s;
+    overflow:hidden;
+  }
+  .box-slot:hover{transform:scale(1.08);}
+  .box-slot .num{position:absolute; top:-2px; left:0px; font-size:6px; color:rgba(255,255,255,.25);}
+  .box-hint{text-align:center; font-size:10.5px; color:var(--dim); margin-top:10px;}
+  
+  .box-slot img{ 
+    max-width:100%; 
+    max-height:100%; 
+    width:auto; 
+    height:auto; 
+    object-fit:contain; 
+    image-rendering:pixelated; 
+  }
+  .box-slot .fallback-label{ font-size:6.5px; color:var(--dim); font-family:'JetBrains Mono', monospace; }
+
+  .type-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+  }
+
+  .detail-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    color: var(--dim);
+    margin-bottom: 6px;
+    letter-spacing: 0.08em;
+  }
+
+  .move-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .move-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .move-tags {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .cat-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    background: #181922;
+    border: 1px solid var(--line);
+  }
+  .cat-Physical { color: #ff6b6b; border-color: #5a2424; }
+  .cat-Special { color: #4dabf7; border-color: #1e3a5f; }
+  .cat-Status { color: #b197fc; border-color: #3b2d54; }
+
+  .move-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+    background: rgba(0,0,0,0.3);
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+  }
+
+  .stat-box {
+    display: flex;
+    flex-direction: column;
+  }
+  .stat-box .lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--dim);
+  }
+  .stat-box .val {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="device-frame">
+    <div class="device-top">
+      <div class="lens"></div>
+      <div class="status-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <div style="margin-left:auto; display:flex; gap:6px;">
+        <a href="./index.html" style="cursor:pointer; text-decoration:none; background:#a9a9a9; color:#ffffff; padding:6px 12px; border-radius:6px; border:1px solid #888; display:inline-block; transition:.15s; box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 2px 4px rgba(0,0,0,.3); font-weight:600; font-size:10px;">Type Check</a>
+        <a href="./Nature_Tag.html" style="cursor:pointer; text-decoration:none; background:#a9a9a9; color:#ffffff; padding:6px 12px; border-radius:6px; border:1px solid #888; display:inline-block; transition:.15s; box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 2px 4px rgba(0,0,0,.3); font-weight:600; font-size:10px;">Nature Tag</a>
+      </div>
+    </div>
+
+    <div class="screen">
+      <header>
+        <div class="eyebrow">Dex // 003</div>
+        <h1>Champions Dex</h1>
+        <p>Search the Regulation M-B roster, or browse the box below.</p>
+      </header>
+
+      <!-- Search Bar Card -->
+      <div class="card">
+        <h2>SEARCH ROSTER</h2>
+        <div class="lookup-row">
+          <input type="text" id="dexSearchInput" placeholder="Enter Pokémon name...">
+          <button id="dexSearchBtn">Search</button>
+        </div>
+      </div>
+
+      <!-- Box Grid Card -->
+      <div class="card box-card">
+        <div class="box-header">
+          <span class="box-title">Regulation Roster Box</span>
+          <span class="box-count" id="boxCount">0 total</span>
+        </div>
+        <div class="box-grid" id="boxGrid"></div>
+        <div class="box-hint">Select a slot to view full details</div>
+      </div>
+
+      <!-- Pokémon Inspector Card -->
+      <div class="card" id="pokeCard" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; gap:12px;">
+          <div>
+            <h2 id="pokeName" style="font-size:26px; color:var(--text); text-transform:none; margin:0 0 8px;"></h2>
+            <div id="typeBadges" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+          </div>
+          <div style="width:130px; height:130px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+            <img id="pokeSprite" src="" alt="" style="max-width:100%; max-height:100%; object-fit:contain; image-rendering:pixelated;">
+          </div>
+        </div>
+
+        <!-- Pokédex Entry Box -->
+        <div style="background:var(--panel-2); border-radius:8px; padding:10px 12px; margin-bottom:16px;">
+          <div class="detail-section-title" style="color:var(--accent); font-weight:700; margin-bottom:4px;">POKÉDEX ENTRY</div>
+          <p id="pokeQuote" style="font-style:italic; color:var(--text); font-size:12.5px; line-height:1.45; margin:0;"></p>
+        </div>
+
+        <!-- Ability Inspector -->
+        <div style="margin-bottom:16px;">
+          <div class="detail-section-title">ABILITY INSPECTOR</div>
+          <select id="abilitySelect" style="width:100%; background:#12131c; border:1px solid var(--line); border-radius:8px; padding:10px; color:var(--text); font-family:'Space Grotesk', sans-serif;"></select>
+          <div style="background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin-top:8px;">
+            <p id="abilityDesc" style="font-size:12px; color:var(--dim); margin:0; line-height:1.4;"></p>
+          </div>
+        </div>
+
+        <!-- Moves -->
+        <div>
+          <div class="detail-section-title">MOVES — REG M-B</div>
+          <select id="moveSelect" style="width:100%; background:#12131c; border:1px solid var(--line); border-radius:8px; padding:10px; color:var(--text); font-family:'Space Grotesk', sans-serif;"></select>
+          <div id="moveCard" style="background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:12px; margin-top:8px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="device-bottom">
+      <button class="bezel-btn" id="clearBtn">Clear</button>
+      <div class="speaker-lines"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+</div>
+
+<script>window.exports = {};</script>
+<script src="https://play.pokemonshowdown.com/data/pokedex.js"></script>
+<script src="https://play.pokemonshowdown.com/data/abilities.js"></script>
+<script src="https://play.pokemonshowdown.com/data/moves.js"></script>
+<script src="https://play.pokemonshowdown.com/data/learnsets.js"></script>
+<script src="./roster.js"></script>
+
+<script>
+const TYPE_COLORS = {
+  Normal: '#A8A77A', Fire: '#EE8130', Water: '#6390F0', Electric: '#F7D02C',
+  Grass: '#7AC74C', Ice: '#96D9D6', Fighting: '#C22E28', Poison: '#A33EA1',
+  Ground: '#E2BF65', Flying: '#A98FF3', Psychic: '#F95587', Bug: '#A6B91A',
+  Rock: '#B6A136', Ghost: '#735797', Dragon: '#6F35FC', Dark: '#705746',
+  Steel: '#B7B7CE', Fairy: '#D685AD'
+};
+
+const pokedexData = window.exports.BattlePokedex || {};
+const abilitiesData = window.exports.BattleAbilities || {};
+const movesData = window.exports.BattleMovedex || {};
+const learnsetData = window.exports.BattleLearnsets || {};
+
+const greenDot = document.querySelector('.status-dots .d3');
+if (greenDot && Object.keys(pokedexData).length > 0) {
+  greenDot.classList.add('pulsing');
+}
+
+const boxGrid = document.getElementById('boxGrid');
+const boxCount = document.getElementById('boxCount');
+const rosterNames = typeof POKEDEX !== 'undefined' ? Object.keys(POKEDEX) : [];
+
+function toShowdownID(name) {
+  if (!name) return '';
+  let clean = name.toLowerCase().trim();
+
+  clean = clean.replace(/^paldean\s+/g, '')
+               .replace(/^alolan\s+/g, '')
+               .replace(/^galarian\s+/g, '')
+               .replace(/^hisuian\s+/g, '');
+
+  clean = clean
+    .replace(/\(alolan\)/g, 'alola')
+    .replace(/\(galarian\)/g, 'galar')
+    .replace(/\(hisuian\)/g, 'hisui')
+    .replace(/\(combat breed\)/g, 'paldeacombat')
+    .replace(/\(blaze breed\)/g, 'paldeablaze')
+    .replace(/\(aqua breed\)/g, 'paldeaaqua')
+    .replace(/\(combat\)/g, 'paldeacombat')
+    .replace(/\(blaze\)/g, 'paldeablaze')
+    .replace(/\(aqua\)/g, 'paldeaaqua')
+    .replace(/[^a-z0-9]/g, '');
+
+  return clean;
+}
+
+function nameToSpriteSlug(name){
+  let clean = name.trim();
+  let isMega = clean.startsWith('Mega ');
+  if (isMega) clean = clean.replace(/^Mega\s+/, '');
+
+  let formSuffix = '';
+  const formMatch = clean.match(/\((.*)\)/);
+  if (formMatch){
+    const form = formMatch[1].toLowerCase();
+    clean = clean.replace(/\s*\(.*\)/, '').trim();
+    if (form.includes('alolan') || form === 'alola') formSuffix = '-alola';
+    else if (form.includes('galarian') || form === 'galar') formSuffix = '-galar';
+    else if (form.includes('hisuian') || form === 'hisui') formSuffix = '-hisui';
+    else if (form.includes('combat')) formSuffix = '-paldeacombat';
+    else if (form.includes('blaze')) formSuffix = '-paldeablaze';
+    else if (form.includes('aqua')) formSuffix = '-paldeaaqua';
+    else if (form === 'female') formSuffix = '-f';
+    else if (form === 'jumbo') formSuffix = '-super';
+    else if (['small','large','heat','wash','frost','fan','mow','midnight','dusk'].includes(form)) formSuffix = `-${form}`;
+    else formSuffix = `-${form.replace(/\s+/g,'')}`;
+  }
+
+  if (clean.toLowerCase().startsWith('paldean ')) {
+    clean = clean.replace(/^paldean\s+/i, '');
+    if (!formSuffix) formSuffix = '-paldea';
+  }
+
+  let slugBase = clean.toLowerCase().replace(/[.']/g, '').replace(/\s+/g, '-');
+  let megaSuffix = isMega ? '-mega' : '';
+
+  return `${slugBase}${megaSuffix}${formSuffix}`;
+}
+
+function renderBox(){
+  boxGrid.innerHTML = '';
+  rosterNames.forEach((name, i) => {
+    const slug = nameToSpriteSlug(name);
+    const baseSlug = toShowdownID(name.replace(/^Mega\s+/i, '').replace(/\s*\(.*\)/, ''));
+    
+    const slot = document.createElement('div');
+    slot.className = 'box-slot';
+    slot.dataset.name = name;
+    slot.innerHTML = `
+      <span class="num">${i + 1}</span>
+      <img src="https://play.pokemonshowdown.com/sprites/dex/${slug}.png"
+           alt="${name}"
+           onerror="this.onerror=null; this.src='https://play.pokemonshowdown.com/sprites/gen5/${slug}.png'; this.onerror=function(){ this.onerror=null; this.src='https://play.pokemonshowdown.com/sprites/dex/${baseSlug}.png'; this.onerror=function(){this.style.display='none'; this.nextElementSibling.style.display='block';}; };">
+      <span class="fallback-label" style="display:none;">${name}</span>
+    `;
+    slot.addEventListener('click', () => loadPokemonDetails(name));
+    boxGrid.appendChild(slot);
+  });
+  boxCount.textContent = `${rosterNames.length} total`;
+}
+
+renderBox();
+
+const dexSearchInput = document.getElementById('dexSearchInput');
+const dexSearchBtn = document.getElementById('dexSearchBtn');
+const clearBtn = document.getElementById('clearBtn');
+const boxCard = document.querySelector('.box-card');
+const pokeCard = document.getElementById('pokeCard');
+
+const pokeName = document.getElementById('pokeName');
+const pokeSprite = document.getElementById('pokeSprite');
+const typeBadges = document.getElementById('typeBadges');
+const pokeQuote = document.getElementById('pokeQuote');
+const abilitySelect = document.getElementById('abilitySelect');
+const abilityDesc = document.getElementById('abilityDesc');
+const moveSelect = document.getElementById('moveSelect');
+const moveCard = document.getElementById('moveCard');
+
+async function fetchGamePokedexEntry(name, mon, showdownMon) {
+  try {
+    let baseName = mon.baseSpecies || (showdownMon && showdownMon.baseSpecies) || name;
+    baseName = baseName.replace(/^Mega\s+/i, '').replace(/\s*\(.*\)/, '').replace(/^Paldean\s+/i, '').trim().toLowerCase()
+      .replace(/[\.\']/g, '')
+      .replace(/\s+/g, '-');
+    
+    const res = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${baseName}`);
+    if (!res.ok) throw new Error('Species not found');
+    const data = await res.json();
+    
+    const englishEntries = data.flavor_text_entries.filter(e => e.language.name === 'en');
+    if (englishEntries.length > 0) {
+      const latestEntry = englishEntries[englishEntries.length - 1];
+      const cleanedText = latestEntry.flavor_text
+        .replace(/[\f\n\r]/g, ' ')
+        .replace(/\s+/g, ' ');
+      pokeQuote.textContent = `"${cleanedText}"`;
+    } else {
+      pokeQuote.textContent = 'No game Pokédex entry available.';
+    }
+  } catch (err) {
+    pokeQuote.textContent = `A key competitor in Regulation M-B.`;
+  }
+}
+
+function loadPokemonDetails(name) {
+  const mon = (typeof POKEDEX !== 'undefined' && POKEDEX[name]) ? POKEDEX[name] : {};
+  let key = toShowdownID(name);
+  
+  let showdownMon = pokedexData[key];
+  let baseKey = toShowdownID(name.replace(/^Mega\s+/i, '').replace(/\s*\(.*\)/, ''));
+  if (!showdownMon && pokedexData[baseKey]) {
+    showdownMon = pokedexData[baseKey];
+  }
+  
+  pokeName.textContent = name;
+
+  const slug = nameToSpriteSlug(name);
+  pokeSprite.src = `https://play.pokemonshowdown.com/sprites/dex/${slug}.png`;
+  pokeSprite.onerror = function() {
+    this.onerror = null;
+    this.src = `https://play.pokemonshowdown.com/sprites/gen5/${slug}.png`;
+    this.onerror = function() {
+      this.onerror = null;
+      this.src = `https://play.pokemonshowdown.com/sprites/dex/${baseKey}.png`;
+    };
+  };
+
+  // 1. Types
+  let types = mon.types || (showdownMon ? showdownMon.types : ['Normal']);
+  typeBadges.innerHTML = '';
+  types.forEach(t => {
+    const badge = document.createElement('span');
+    badge.className = 'type-badge';
+    badge.style.background = TYPE_COLORS[t] || '#777';
+    badge.textContent = t;
+    typeBadges.appendChild(badge);
+  });
+
+  // Pokédex Entry Text
+  const localEntry = mon.entry || mon.flavorText || mon.dexEntry || mon.description || mon.quote;
+  if (localEntry) {
+    pokeQuote.textContent = localEntry;
+  } else {
+    pokeQuote.textContent = "Loading official game Pokédex entry...";
+    fetchGamePokedexEntry(name, mon, showdownMon);
+  }
+
+  // 2. Abilities
+  abilitySelect.innerHTML = '';
+  let abilities = mon.abilities;
+  if (!abilities && showdownMon && showdownMon.abilities) {
+    abilities = Object.values(showdownMon.abilities);
+  }
+  abilities = Array.isArray(abilities) ? abilities : (abilities ? Object.values(abilities) : ['Standard Ability']);
+
+  abilities.forEach(ab => {
+    const opt = document.createElement('option');
+    opt.value = ab;
+    opt.textContent = ab;
+    abilitySelect.appendChild(opt);
+  });
+  updateAbilityDesc();
+
+  // 3. Moves
+  moveSelect.innerHTML = '';
+  let moves = mon.moves || mon.learnset;
+
+  let lsEntry = learnsetData[key] || learnsetData[baseKey] || (showdownMon && showdownMon.baseSpecies ? learnsetData[toShowdownID(showdownMon.baseSpecies)] : null);
+
+  if ((!moves || !moves.length) && lsEntry && lsEntry.learnset) {
+    const rawMoves = Object.keys(lsEntry.learnset);
+    moves = rawMoves.map(mKey => movesData[mKey] ? movesData[mKey].name : mKey);
+  }
+
+  moves = (moves && moves.length) ? moves : ['Protect'];
+
+  moves.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m;
+    opt.textContent = m;
+    moveSelect.appendChild(opt);
+  });
+  updateMoveDetail();
+
+  boxCard.style.display = 'none';
+  pokeCard.style.display = 'block';
+}
+
+function updateAbilityDesc() {
+  const selected = abilitySelect.value;
+  const key = toShowdownID(selected);
+  const data = abilitiesData[key];
+  abilityDesc.textContent = data ? (data.shortDesc || data.desc) : `Ability: ${selected}`;
+}
+
+function updateMoveDetail() {
+  const selectedMove = moveSelect.value;
+  const key = toShowdownID(selectedMove);
+  const data = movesData[key];
+
+  const type = data ? data.type : 'Normal';
+  const category = data ? data.category : 'Status';
+  const power = data && data.basePower ? data.basePower : '—';
+  const accuracy = data && data.accuracy ? (data.accuracy === true ? '100%' : data.accuracy + '%') : '—';
+  const desc = data ? (data.shortDesc || data.desc) : `Move entry for ${selectedMove}.`;
+  const typeColor = TYPE_COLORS[type] || '#777';
+
+  moveCard.innerHTML = `
+    <div class="move-header">
+      <span class="move-name">${data ? data.name : selectedMove}</span>
+      <div class="move-tags">
+        <span class="type-badge" style="background:${typeColor}; font-size:10px; padding:2px 8px;">${type}</span>
+        <span class="cat-badge cat-${category}">${category}</span>
+      </div>
+    </div>
+    <div class="move-stats-grid">
+      <div class="stat-box"><span class="lbl">POWER</span><span class="val">${power}</span></div>
+      <div class="stat-box"><span class="lbl">ACCURACY</span><span class="val">${accuracy}</span></div>
+    </div>
+    <p style="font-size:12px; color:var(--dim); margin:0; line-height:1.4;">${desc}</p>
+  `;
+}
+
+function performSearch() {
+  const q = dexSearchInput.value.trim().toLowerCase();
+  if (!q) return;
+  const match = rosterNames.find(n => n.toLowerCase() === q) || 
+                rosterNames.find(n => n.toLowerCase().includes(q));
+  if (match) loadPokemonDetails(match);
+}
+
+abilitySelect.addEventListener('change', updateAbilityDesc);
+moveSelect.addEventListener('change', updateMoveDetail);
+dexSearchBtn.addEventListener('click', performSearch);
+dexSearchInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') performSearch();
+});
+
+clearBtn.addEventListener('click', () => {
+  dexSearchInput.value = '';
+  boxCard.style.display = 'block';
+  pokeCard.style.display = 'none';
+});
+</script>
+</body>
+</html>
