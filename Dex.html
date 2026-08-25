@@ -436,8 +436,20 @@ const rosterNames = typeof POKEDEX !== 'undefined' ? Object.keys(POKEDEX) : [];
 
 function toShowdownID(name) {
   if (!name) return '';
-  let clean = name.toLowerCase().trim();
+  let clean = name.trim();
 
+  if (clean.startsWith('Mega ')) {
+    let base = clean.replace(/^Mega\s+/, '');
+    let letter = '';
+    const letterMatch = base.match(/\s(X|Y)$/i);
+    if (letterMatch) {
+      letter = letterMatch[1].toLowerCase();
+      base = base.replace(/\s(X|Y)$/i, '');
+    }
+    return base.toLowerCase().replace(/[^a-z0-9]/g, '') + 'mega' + letter;
+  }
+
+  clean = clean.toLowerCase();
   clean = clean.replace(/^paldean\s+/g, '')
                .replace(/^alolan\s+/g, '')
                .replace(/^galarian\s+/g, '')
@@ -613,24 +625,44 @@ function loadPokemonDetails(name) {
   updateAbilityDesc();
 
   moveSelect.innerHTML = '';
-  let moves = mon.moves || mon.learnset;
+let moves = mon.moves || mon.learnset;
 
-  let lsEntry = learnsetData[key] || learnsetData[baseKey] || (showdownMon && showdownMon.baseSpecies ? learnsetData[toShowdownID(showdownMon.baseSpecies)] : null);
+let lsEntry = learnsetData[key] || learnsetData[baseKey] || (showdownMon && showdownMon.baseSpecies ? learnsetData[toShowdownID(showdownMon.baseSpecies)] : null);
 
-  if ((!moves || !moves.length) && lsEntry && lsEntry.learnset) {
-    const rawMoves = Object.keys(lsEntry.learnset);
-    moves = rawMoves.map(mKey => movesData[mKey] ? movesData[mKey].name : mKey);
-  }
+if ((!moves || !moves.length) && lsEntry && lsEntry.learnset) {
+  const rawMoves = Object.keys(lsEntry.learnset);
+  moves = rawMoves.map(mKey => movesData[mKey] ? movesData[mKey].name : mKey);
+}
 
-  moves = (moves && moves.length) ? moves : ['Protect'];
+moves = (moves && moves.length) ? moves : ['Protect'];
 
-  moves.forEach(m => {
+const TYPE_ORDER = ['Normal','Fire','Water','Electric','Grass','Ice','Fighting','Poison',
+  'Ground','Flying','Psychic','Bug','Rock','Ghost','Dragon','Dark','Steel','Fairy'];
+
+const movesByType = {};
+moves.forEach(m => {
+  const data = movesData[toShowdownID(m)];
+  const type = data ? data.type : 'Normal';
+  if (!movesByType[type]) movesByType[type] = [];
+  movesByType[type].push(m);
+});
+
+TYPE_ORDER.forEach(type => {
+  if (!movesByType[type]) return;
+  const group = document.createElement('optgroup');
+  group.label = type;
+  movesByType[type].sort().forEach(m => {
     const opt = document.createElement('option');
     opt.value = m;
     opt.textContent = m;
-    moveSelect.appendChild(opt);
+    opt.style.backgroundColor = TYPE_COLORS[type] || '#333';
+    opt.style.color = '#fff';
+    group.appendChild(opt);
   });
-  updateMoveDetail();
+  moveSelect.appendChild(group);
+});
+
+updateMoveDetail();
 
   boxCard.style.display = 'none';
   pokeCard.style.display = 'block';
