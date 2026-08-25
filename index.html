@@ -37,7 +37,6 @@
   }
   .wrap{max-width:720px; margin:0 auto;}
 
-  /* --- Handheld device frame --- */
   .device-frame{
     background:
       linear-gradient(155deg, #ec3a3f 0%, #c81820 55%, #a3141a 100%);
@@ -167,7 +166,6 @@
     font-weight:600;
   }
 
-  /* Name lookup */
   .lookup-row{display:flex; gap:8px;}
   .lookup-row input{
     flex:1;
@@ -238,7 +236,6 @@
     vertical-align:middle;
   }
 
-  /* Keypad — bezel-mounted type buttons */
   .keypad{
     margin:6px 4px 2px;
     padding:14px 10px 10px;
@@ -300,7 +297,6 @@
     padding:0;
   }
 
-  /* Selected summary */
   .selection-line{
     display:flex;
     align-items:center;
@@ -321,7 +317,6 @@
   .selection-line .plus{color:var(--dim); font-weight:600;}
   .selection-line .placeholder{color:var(--dim); font-size:13.5px;}
 
-  /* Results */
   .result-section{margin-bottom:18px;}
   .result-section:last-child{margin-bottom:0;}
   .result-label{
@@ -414,7 +409,6 @@ const TYPE_COLORS = {
   Steel:'#B8B8D0', Fairy:'#EE99AC'
 };
 
-// weak = types that hit this type for 2x, resist = types that hit for 0.5x, immune = 0x
 const TYPE_CHART = {
   Normal:   {weak:['Fighting'], resist:[], immune:['Ghost']},
   Fire:     {weak:['Water','Ground','Rock'], resist:['Fire','Grass','Ice','Bug','Steel','Fairy'], immune:[]},
@@ -479,12 +473,12 @@ function multiplierFor(attackType, defendTypes){
 }
 
 function render(){
-  // type grid selection state
+
   document.querySelectorAll('.type-btn').forEach(b=>{
     b.classList.toggle('selected', selected.includes(b.dataset.type));
   });
 
-  // selection line
+
   const line = document.getElementById('selectionLine');
   if(selected.length === 0){
     line.innerHTML = '<span class="placeholder">No type selected yet</span>';
@@ -533,14 +527,13 @@ function render(){
   }).join('');
 }
 
-// --- Regulation M-B roster: fixed, offline dataset (no network needed) ---
+
 const nameInput = document.getElementById('nameInput');
 const lookupBtn = document.getElementById('lookupBtn');
 const lookupStatus = document.getElementById('lookupStatus');
 const suggestList = document.getElementById('suggestList');
 
 
-// build a normalized lookup index: "raichualolan" / "megamawile" / "taurosblazebreed" -> canonical name
 const SEARCH_INDEX = {};
 Object.keys(POKEDEX).forEach(name => {
   const norm = name.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -575,13 +568,11 @@ function doLookup(){
   suggestList.innerHTML = '';
   lookupStatus.className = 'lookup-status';
 
-  // exact normalized match
   if(SEARCH_INDEX[norm]){
     applyTypes(SEARCH_INDEX[norm]);
     return;
   }
 
-  // substring match across all roster names
   const matches = Object.keys(POKEDEX).filter(name => {
     const n = name.toLowerCase().replace(/[^a-z0-9]/g, '');
     return n.includes(norm) || norm.includes(n);

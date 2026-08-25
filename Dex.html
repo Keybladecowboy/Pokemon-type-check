@@ -37,7 +37,6 @@
   }
   .wrap{max-width:720px; margin:0 auto;}
 
-  /* --- Handheld device frame --- */
   .device-frame{
     background:
       linear-gradient(155deg, #ec3a3f 0%, #c81820 55%, #a3141a 100%);
@@ -173,7 +172,6 @@
     font-weight:600;
   }
 
-  /* Search */
   .lookup-row{display:flex; gap:8px;}
   .lookup-row input{
     flex:1;
@@ -213,6 +211,8 @@
     padding:14px 10px;
     max-height:420px;
     overflow-y:auto;
+    overflow-x:hidden;
+    touch-action:pan-y;
     scrollbar-width:none;
     -ms-overflow-style:none;
   }
@@ -348,7 +348,6 @@
         <p>Search the Regulation M-B roster, or browse the box below.</p>
       </header>
 
-      <!-- Search Bar Card -->
       <div class="card">
         <h2>SEARCH ROSTER</h2>
         <div class="lookup-row">
@@ -357,7 +356,6 @@
         </div>
       </div>
 
-      <!-- Box Grid Card -->
       <div class="card box-card">
         <div class="box-header">
           <span class="box-title">Regulation Roster Box</span>
@@ -367,7 +365,6 @@
         <div class="box-hint">Select a slot to view full details</div>
       </div>
 
-      <!-- Pokémon Inspector Card -->
       <div class="card" id="pokeCard" style="display:none;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; gap:12px;">
           <div>
@@ -379,13 +376,11 @@
           </div>
         </div>
 
-        <!-- Pokédex Entry Box -->
         <div style="background:var(--panel-2); border-radius:8px; padding:10px 12px; margin-bottom:16px;">
           <div class="detail-section-title" style="color:var(--accent); font-weight:700; margin-bottom:4px;">POKÉDEX ENTRY</div>
           <p id="pokeQuote" style="font-style:italic; color:var(--text); font-size:12.5px; line-height:1.45; margin:0;"></p>
         </div>
 
-        <!-- Ability Inspector -->
         <div style="margin-bottom:16px;">
           <div class="detail-section-title">ABILITY INSPECTOR</div>
           <select id="abilitySelect" style="width:100%; background:#12131c; border:1px solid var(--line); border-radius:8px; padding:10px; color:var(--text); font-family:'Space Grotesk', sans-serif;"></select>
@@ -394,7 +389,6 @@
           </div>
         </div>
 
-        <!-- Moves -->
         <div>
           <div class="detail-section-title">MOVES — REG M-B</div>
           <select id="moveSelect" style="width:100%; background:#12131c; border:1px solid var(--line); border-radius:8px; padding:10px; color:var(--text); font-family:'Space Grotesk', sans-serif;"></select>
@@ -585,7 +579,6 @@ function loadPokemonDetails(name) {
     };
   };
 
-  // 1. Types
   let types = mon.types || (showdownMon ? showdownMon.types : ['Normal']);
   typeBadges.innerHTML = '';
   types.forEach(t => {
@@ -596,7 +589,6 @@ function loadPokemonDetails(name) {
     typeBadges.appendChild(badge);
   });
 
-  // Pokédex Entry Text
   const localEntry = mon.entry || mon.flavorText || mon.dexEntry || mon.description || mon.quote;
   if (localEntry) {
     pokeQuote.textContent = localEntry;
@@ -605,7 +597,6 @@ function loadPokemonDetails(name) {
     fetchGamePokedexEntry(name, mon, showdownMon);
   }
 
-  // 2. Abilities
   abilitySelect.innerHTML = '';
   let abilities = mon.abilities;
   if (!abilities && showdownMon && showdownMon.abilities) {
@@ -621,7 +612,6 @@ function loadPokemonDetails(name) {
   });
   updateAbilityDesc();
 
-  // 3. Moves
   moveSelect.innerHTML = '';
   let moves = mon.moves || mon.learnset;
 

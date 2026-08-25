@@ -38,7 +38,6 @@
   }
   .wrap{max-width:720px; margin:0 auto;}
 
-  /* --- Handheld device frame --- */
   .device-frame{
     background:
       linear-gradient(155deg, #ec3a3f 0%, #c81820 55%, #a3141a 100%);
@@ -201,7 +200,6 @@
   .preview-box video{width:100%; height:100%; object-fit:cover;}
   .preview-placeholder{color:var(--dim); font-size:13px; text-align:center;}
 
-  /* Scaled grid matching Switch 6-slot card positions */
   .preview-overlay-grid{
     position:absolute;
     top:24.5%;
@@ -234,7 +232,6 @@
     border-radius:3px;
   }
 
-  /* Fullscreen camera capture with locked 16:9 horizontal frame */
   .camera-overlay{
     position:fixed;
     inset:0;
@@ -330,7 +327,6 @@
   .label-overlay:active{cursor:grabbing;}
   .label-overlay.active{outline:2px dashed var(--accent); outline-offset:3px;}
 
-  /* Roster — one row per tagged Pokémon */
   .roster-item{
     display:flex;
     flex-direction:column;
@@ -484,7 +480,7 @@
 
 
 <script>
-// --- Nature reference data ---
+
 const NATURES = [
   { name: "Adamant", up: "Atk", down: "SpA" },
   { name: "Bold", up: "Def", down: "Atk" },
@@ -513,7 +509,7 @@ const NATURES = [
   { name: "Quirky", up: null, down: null },
 ];
 
-// Targets the bottom-right watermarked numbers (1-6) of each card slot
+
 const GRID_FALLBACK = [
   { x: 26.0, y: 38.2, rotation: 0 },
   { x: 68.0, y: 38.2, rotation: 0 },
@@ -523,7 +519,7 @@ const GRID_FALLBACK = [
   { x: 68.0, y: 78.6, rotation: 0 },
 ];
 
-// --- State ---
+
 let photo = null;
 let photoDims = { w: 0, h: 0 };
 let labels = [];
@@ -532,7 +528,7 @@ let dragId = null;
 let stream = null;
 let isStreaming = false;
 
-// --- DOM references ---
+
 const previewBox = document.getElementById('previewBox');
 const rosterCard = document.getElementById('rosterCard');
 const rosterList = document.getElementById('rosterList');
@@ -569,7 +565,7 @@ function newLabel(x, y, rotation = 0){
   };
 }
 
-// --- Photo loading (library / file input) ---
+
 libraryBtn.addEventListener('click', () => fileInput.click());
 
 fileInput.addEventListener('change', (e) => {
@@ -601,7 +597,7 @@ function loadDataUrl(url){
   img.src = url;
 }
 
-// --- Live camera capture ---
+
 let lastRequestedFacing = 'environment';
 
 function stopCameraStream(){
@@ -692,7 +688,7 @@ takePhotoBtn.addEventListener('click', () => {
   const rawH = inlineVideo.videoHeight;
   const isRotated = cameraStage.classList.contains('ios-landscape-fix');
 
-  // Step 1: bake the same rotation correction into an intermediate canvas
+
   const rotW = isRotated ? rawH : rawW;
   const rotH = isRotated ? rawW : rawH;
   const rotCanvas = document.createElement('canvas');
@@ -707,7 +703,7 @@ takePhotoBtn.addEventListener('click', () => {
     rotCtx.drawImage(inlineVideo, 0, 0);
   }
 
-  // Step 2: same 16:9 center-crop as before, now on the corrected frame
+
   const targetAspect = 16 / 9;
   const currentAspect = rotW / rotH;
   let sw = rotW, sh = rotH, sx = 0, sy = 0;
@@ -730,14 +726,14 @@ takePhotoBtn.addEventListener('click', () => {
   loadDataUrl(canvas.toDataURL("image/jpeg", 0.92));
 });
 
-// --- Auto grid placement ---
+
 gridBtn.addEventListener('click', () => {
   labels = GRID_FALLBACK.map(s => newLabel(s.x, s.y, s.rotation));
   activeId = null;
   render();
 });
 
-// --- Label roster ---
+
 function setActive(id){
   activeId = activeId === id ? null : id;
   render();
@@ -804,7 +800,7 @@ clearAllBtn.addEventListener('click', () => {
   render();
 });
 
-// --- Export annotated image ---
+
 downloadBtn.addEventListener('click', async () => {
   if (!photo || !photoDims.w) return;
   downloadBtn.disabled = true;
@@ -847,7 +843,7 @@ downloadBtn.addEventListener('click', async () => {
   downloadBtn.disabled = false;
 });
 
-// --- Render ---
+
 function render(){
   gridBtn.style.display = photo ? 'inline-block' : 'none';
 
