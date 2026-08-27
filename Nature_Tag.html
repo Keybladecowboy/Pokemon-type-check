@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="./analytics.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nature Tag</title>
@@ -127,6 +128,7 @@
     display:flex;
     flex-direction:column;
     gap:4px;
+    align-items:flex-end;
   }
   .speaker-lines span{
     display:block;
@@ -593,6 +595,7 @@ function loadDataUrl(url){
     labels = [];
     activeId = null;
     render();
+    trackEvent('photo_loaded');
   };
   img.src = url;
 }
@@ -743,6 +746,9 @@ function updateLabel(id, key, val){
   const l = labels.find(x => x.id === id);
   if (l) l[key] = val;
   render();
+  if (key === 'nature' && val) {
+    trackEvent('tag_added', { pokemon: val });
+  }
 }
 
 function removeLabel(id){
@@ -840,6 +846,7 @@ downloadBtn.addEventListener('click', async () => {
   a.download = 'nature-tagged-team.png';
   a.click();
 
+  trackEvent('image_saved', { pokemon: `${labels.filter(l => l.nature).length} tags` });
   downloadBtn.disabled = false;
 });
 
@@ -898,6 +905,7 @@ function render(){
 }
 
 render();
+trackEvent('page_view');
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

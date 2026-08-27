@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="./analytics.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dex</title>
@@ -428,7 +429,10 @@ const learnsetData = window.exports.BattleLearnsets || {};
 const greenDot = document.querySelector('.status-dots .d3');
 if (greenDot && Object.keys(pokedexData).length > 0) {
   greenDot.classList.add('pulsing');
+} else {
+  trackEvent('dex_offline');
 }
+trackEvent('page_view');
 
 const boxGrid = document.getElementById('boxGrid');
 const boxCount = document.getElementById('boxCount');
@@ -503,29 +507,58 @@ function nameToSpriteSlug(name){
   return `${slugBase}${megaSuffix}${formSuffix}`;
 }
 
-function renderBox(){
+function handleSpriteError(imgElement, slug) {
+  const currentSrc = imgElement.src;
+
+  // Stage 1: Dex art failed -> Try Home 3D sprite
+  if (currentSrc.includes('/sprites/dex/')) {
+    imgElement.src = `https://play.pokemonshowdown.com/sprites/home/${slug}.png`;
+    return;
+  }
+  
+  // Stage 2: Home 3D failed -> Try Gen 5 pixel sprite
+  if (currentSrc.includes('/sprites/home/')) {
+    imgElement.src = `https://play.pokemonshowdown.com/sprites/gen5/${slug}.png`;
+    return;
+  }
+
+  // Stage 3: Gen 5 failed -> Hide image, reveal fallback text label
+  imgElement.style.display = 'none';
+  if (imgElement.nextElementSibling) {
+    imgElement.nextElementSibling.style.display = 'block';
+  }
+}
+
+function renderBox() {
   boxGrid.innerHTML = '';
   rosterNames.forEach((name, i) => {
     const slug = nameToSpriteSlug(name);
-    const baseSlug = toShowdownID(name.replace(/^Mega\s+/i, '').replace(/\s*\(.*\)/, ''));
-    
     const slot = document.createElement('div');
     slot.className = 'box-slot';
     slot.dataset.name = name;
+
     slot.innerHTML = `
       <span class="num">${i + 1}</span>
       <img src="https://play.pokemonshowdown.com/sprites/dex/${slug}.png"
            alt="${name}"
-           onerror="this.onerror=null; this.src='https://play.pokemonshowdown.com/sprites/gen5/${slug}.png'; this.onerror=function(){ this.onerror=null; this.src='https://play.pokemonshowdown.com/sprites/dex/${baseSlug}.png'; this.onerror=function(){this.style.display='none'; this.nextElementSibling.style.display='block';}; };">
+           onerror="handleSpriteError(this, '${slug}')">
       <span class="fallback-label" style="display:none;">${name}</span>
     `;
-    slot.addEventListener('click', () => loadPokemonDetails(name));
     boxGrid.appendChild(slot);
   });
   boxCount.textContent = `${rosterNames.length} total`;
 }
 
 renderBox();
+boxGrid.addEventListener('click', (e) => {
+  const slot = e.target.closest('.box-slot');
+  if (!slot) return;
+  const name = slot.dataset.name;
+  if (name) {
+    loadPokemonDetails(name);
+    trackEvent('box_slot_clicked', { pokemon: name });
+  }
+});
 
 const dexSearchInput = document.getElementById('dexSearchInput');
 const dexSearchBtn = document.getElementById('dexSearchBtn');
@@ -708,7 +741,12 @@ function performSearch() {
   if (!q) return;
   const match = rosterNames.find(n => n.toLowerCase() === q) || 
                 rosterNames.find(n => n.toLowerCase().includes(q));
-  if (match) loadPokemonDetails(match);
+  if (match) {
+    loadPokemonDetails(match);
+    trackEvent('dex_search', { pokemon: match });
+  } else {
+    trackEvent('dex_search', { pokemon: q + ' (not found)' });
+  }
 }
 
 abilitySelect.addEventListener('change', updateAbilityDesc);
